@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html ng-app="app">
+<head>
+<meta charset="UTF-8">
+<title>PRUEBAS</title>
+
+<!-- load bootstrap and fontawesome via CDN -->
+<link rel="stylesheet"
+	href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" />
+<link rel="stylesheet"
+	href="//netdna.bootstrapcdn.com/font-awesome/4.0.0/css/font-awesome.css" />
+<!-- load angular and angular route via CDN -->
+<script
+	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.25/angular.min.js"></script>
+<script
+	src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.25/angular-route.js"></script>
+
+
+<script src="controlador.js"></script>
+
+
+</head>
+
+<body ng-controller="mainCtl">
+
+	<div class="container">
+		<div class="row">
+			<div class="navbar navbar-default navbar-fixed-top col-md-12">
+				<div class="navbar-inner">
+					<h1 align="center">Pruebas Tiempo Real pkrVista</h1>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row" style="padding-top: 100px">
+		<div class="col-sm-8 col-sm-offset-4">
+			<button type="button" class="btn btn-success"
+				ng-click="infoTiempoReal()">ScrenShoot</button>
+			<button type="button" class="btn btn-primary"
+				ng-click="guardarInfo()">Guardar</button>
+		</div>
+	</div>
+
+	<div class="row" style="margin-top: 15px;">
+		<div class="col-md-12">
+			<pre>{{res}}</pre>
+		</div>
+	</div>
+	<div class="row" style="margin-top: 15px;">
+		<div class="col-md-12" ng-init="imgTmp = 'img/tmpImg.png'">
+			<img ng-src="{{imgTmp}}"
+				style="max-width: 100%; max-height: 100%" />
+		</div>
+	</div>
+
+
+
+</body>
+</html>
