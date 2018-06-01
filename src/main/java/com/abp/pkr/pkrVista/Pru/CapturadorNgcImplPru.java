@@ -33,11 +33,12 @@ public class CapturadorNgcImplPru extends CapturadorOcrNgcImpl {
 
 	public HandInfoDto extraerInfoArchivoImg() throws Exception {
 		HandInfoDto handInfoDto = new HandInfoDto();
-		// inicio imagen de screenshot PRUEBA
-		String ruta = home+ mesaConfig.getRutacaptura() + mesaConfig.getNombrearchivo() + mesaConfig.getFormato();
+		
+		// leemos imagen desde directorio
+		String ruta = home+ mesaConfig.getRutacaptura() + "\\" + mesaConfig.getNombrearchivo() + mesaConfig.getFormato();
 		BufferedImage img = ImageIO.read(new File(ruta));
-		String nombre = mesaConfig.getNombrearchivo() + mesaConfig.getFormato();
 
+		// procesamos zonas
 		handInfoDto = procesarZonas(img);
 
 		return handInfoDto;

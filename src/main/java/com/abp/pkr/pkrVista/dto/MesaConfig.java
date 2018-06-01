@@ -20,43 +20,27 @@ public class MesaConfig {
 
 	// coordenadas
 	private List<Zona> stack = new ArrayList<>();
-	private List<Zona> mesa = new ArrayList<>();
-	private List<Zona> history = new ArrayList<>();
 	private List<Zona> palos = new ArrayList<>();
-	private Zona cartas;
-	private Zona numhand;
-	private Zona tourneynum;
+	private List<Zona> mesa = new ArrayList<>();
 	private Zona posicion;
-	private Zona tipomesa;
+	private Zona cartas;
 
-	// rutas de archivos
-	private String rutacaptura;
-
-	private String rutastacks;
-	private String rutamesa;
-	private String rutatourneynum;
-	private String rutaposicion;
-	private String rutahistory;
-	private String rutatipomesa;
-	private String rutapalos;
-
-	private String rutahandnum;
-	private String rutacartas;
-
-	private String nombrearchivo;
+	private String rutaPalos;
+	
 	private String formato;
 	private String margenerror;
 	private String sillahero;
-	private String jugadordefault;
-	private String tipojuego;
 
 	// OCR CONFIG
 	private String factorResize;
 	private String tessdata;
 	private String tessLeng;
 
-	// *******************************INNER
-	// CLASSES******************************
+	// rutas de archivos Pruebas
+	private String rutacaptura;
+	private String nombrearchivo;
+
+	// *******************************INNER CLASSES******************************
 	public static class Zona {
 		private int x;
 		private int y;
@@ -98,54 +82,6 @@ public class MesaConfig {
 	}
 
 	// *******************************************************
-
-	public String getRutastacks() {
-		return rutastacks;
-	}
-
-	public void setRutastacks(String rutastacks) {
-		this.rutastacks = rutastacks;
-	}
-
-	public String getRutamesa() {
-		return rutamesa;
-	}
-
-	public void setRutamesa(String rutamesa) {
-		this.rutamesa = rutamesa;
-	}
-
-	public String getRutahandnum() {
-		return rutahandnum;
-	}
-
-	public void setRutahandnum(String rutahandnum) {
-		this.rutahandnum = rutahandnum;
-	}
-
-	public String getRutaposicion() {
-		return rutaposicion;
-	}
-
-	public void setRutaposicion(String rutaposicion) {
-		this.rutaposicion = rutaposicion;
-	}
-
-	public String getRutacartas() {
-		return rutacartas;
-	}
-
-	public void setRutacartas(String rutacartas) {
-		this.rutacartas = rutacartas;
-	}
-
-	public String getRutahistory() {
-		return rutahistory;
-	}
-
-	public void setRutahistory(String rutahistory) {
-		this.rutahistory = rutahistory;
-	}
 
 	public String getRutacaptura() {
 		return rutacaptura;
@@ -199,30 +135,6 @@ public class MesaConfig {
 		this.mesa = mesa;
 	}
 
-	public List<Zona> getHistory() {
-		return history;
-	}
-
-	public void setHistory(List<Zona> history) {
-		this.history = history;
-	}
-
-	public String getRutatourneynum() {
-		return rutatourneynum;
-	}
-
-	public void setRutatourneynum(String rutatourneynum) {
-		this.rutatourneynum = rutatourneynum;
-	}
-
-	public Zona getTourneynum() {
-		return tourneynum;
-	}
-
-	public void setTourneynum(Zona tourneynum) {
-		this.tourneynum = tourneynum;
-	}
-
 	public Zona getPosicion() {
 		return posicion;
 	}
@@ -231,36 +143,12 @@ public class MesaConfig {
 		this.posicion = posicion;
 	}
 
-	public String getRutatipomesa() {
-		return rutatipomesa;
-	}
-
-	public void setRutatipomesa(String rutatipomesa) {
-		this.rutatipomesa = rutatipomesa;
-	}
-
-	public Zona getTipomesa() {
-		return tipomesa;
-	}
-
-	public void setTipomesa(Zona tipomesa) {
-		this.tipomesa = tipomesa;
-	}
-
 	public String getSillahero() {
 		return sillahero;
 	}
 
 	public void setSillahero(String sillahero) {
 		this.sillahero = sillahero;
-	}
-
-	public String getJugadordefault() {
-		return jugadordefault;
-	}
-
-	public void setJugadordefault(String jugadordefault) {
-		this.jugadordefault = jugadordefault;
 	}
 
 	public String getFactorResize() {
@@ -287,22 +175,6 @@ public class MesaConfig {
 		this.tessLeng = tessLeng;
 	}
 
-	public String getTipojuego() {
-		return tipojuego;
-	}
-
-	public void setTipojuego(String tipojuego) {
-		this.tipojuego = tipojuego;
-	}
-
-	public Zona getNumhand() {
-		return numhand;
-	}
-
-	public void setNumhand(Zona numhand) {
-		this.numhand = numhand;
-	}
-
 	public Zona getCartas() {
 		return cartas;
 	}
@@ -311,20 +183,20 @@ public class MesaConfig {
 		this.cartas = cartas;
 	}
 
-	public String getRutapalos() {
-		return rutapalos;
-	}
-
-	public void setRutapalos(String rutapalos) {
-		this.rutapalos = rutapalos;
-	}
-
 	public List<Zona> getPalos() {
 		return palos;
 	}
 
 	public void setPalos(List<Zona> palos) {
 		this.palos = palos;
+	}
+
+	public String getRutaPalos() {
+		return rutaPalos;
+	}
+
+	public void setRutaPalos(String rutaPalos) {
+		this.rutaPalos = rutaPalos;
 	}
 
 }
