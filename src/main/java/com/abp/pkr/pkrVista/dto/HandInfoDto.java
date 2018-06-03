@@ -12,10 +12,10 @@ public class HandInfoDto {
 	private String hand;
 	// los arrays deben tener length de los jugadores vivos en la mesa
 	private Double[] stacksBb;
-	
+	private Integer numjug;
+
 	// tiempo de respuesta del servicio
 	private Long tiempoRest;
-
 
 	public int getSillaHero() {
 		return sillaHero;
@@ -114,6 +114,14 @@ public class HandInfoDto {
 
 	public void setTiempoRest(long l) {
 		this.tiempoRest = l;
+	}
+
+	public Integer getNumjug() {
+		return numjug;
+	}
+
+	public void setNumjug(Integer numjug) {
+		this.numjug = numjug;
 	}
 
 }

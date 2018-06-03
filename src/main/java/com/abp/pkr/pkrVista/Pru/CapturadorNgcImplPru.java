@@ -5,10 +5,13 @@ package com.abp.pkr.pkrVista.Pru;
 
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Writer;
 import java.util.Date;
 
 import javax.imageio.ImageIO;
@@ -23,6 +26,7 @@ import com.abp.pkr.pkrVista.dto.HandInfoDto;
 import com.abp.pkr.pkrVista.ngc.CapturadorOcrNgcImpl;
 import com.abp.pkr.pkrVista.utl.UtilView;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * @author abpubuntu
@@ -33,9 +37,10 @@ public class CapturadorNgcImplPru extends CapturadorOcrNgcImpl {
 
 	public HandInfoDto extraerInfoArchivoImg() throws Exception {
 		HandInfoDto handInfoDto = new HandInfoDto();
-		
+
 		// leemos imagen desde directorio
-		String ruta = home+ mesaConfig.getRutacaptura() + "\\" + mesaConfig.getNombrearchivo() + mesaConfig.getFormato();
+		String ruta = home + mesaConfig.getRutacaptura() + "\\" + mesaConfig.getNombrearchivo()
+				+ mesaConfig.getFormato();
 		BufferedImage img = ImageIO.read(new File(ruta));
 
 		// procesamos zonas
@@ -52,58 +57,62 @@ public class CapturadorNgcImplPru extends CapturadorOcrNgcImpl {
 				mesaConfig.getMesa().get(0).getAncho(), mesaConfig.getMesa().get(0).getAlto());
 		BufferedImage screenImg = capturador.capturarScreenZona(zona);
 
-		//Guardar Imagen y info
+		// Guardar Imagen y info
 		String ruta = home + mesaConfig.getRutacaptura();
-		UtilView.guardarImagen(screenImg, ruta+"tmpImg.png");
-		
+		UtilView.guardarImagen(screenImg, ruta + "\\tmpImg.png");
+
 		// procesamos zonas
 		handInfoDto = procesarZonas(screenImg);
-		
-		Gson gson = new Gson();		
-		gson.toJson(handInfoDto, new FileWriter(ruta+"tmpJson.json"));	
+
+		try (Writer writer = new FileWriter(ruta + "\\tmpJson")) {
+			Gson gson = new GsonBuilder().create();
+			gson.toJson(handInfoDto, writer);
+		}
 
 		return handInfoDto;
 	}
 
 	/**
-	 *@author abpubuntu
-	 *@date Jun 5, 2017
+	 * @author abpubuntu
+	 * @date Jun 5, 2017
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	public String guardarInfo() throws Exception {
 		String ruta = home + mesaConfig.getRutacaptura();
-		Long date= new Date().getTime();
+		Long date = new Date().getTime();
 
-		File tmpImg = new File(ruta+"tmpImg.png");
-		File tmpJson = new File(ruta+"tmpJson.json");
+		File tmpImg = new File(ruta + "\\tmpImg.png");		
+		File tmpJson = new File(ruta + "\\tmpJson");
+		
+		BufferedImage bf = ImageIO.read(tmpImg); 
 
-		File nuevaImg = new File(ruta+date.toString()+".png");
-		File nuevaJson = new File(ruta+date.toString()+".json");
+		File nuevaImg = new File(ruta + "\\" + date.toString() + ".png");
+		File nuevaJson = new File(ruta + "\\" + date.toString());
 
 		if (nuevaImg.exists() && nuevaJson.exists())
-		   throw new java.io.IOException("files exists");
-		
-		boolean successImg = tmpImg.renameTo(nuevaImg);
+			throw new java.io.IOException("files exists");
+
+		UtilView.guardarImagen(bf, ruta + "\\" + date.toString() + ".png");
 		boolean successJson = tmpJson.renameTo(nuevaJson);
-		
-		if(successImg && successJson) return date.toString();
-		
+
+		if (successJson)
+			return date.toString();
+
 		return null;
 	}
 
-
 	public String obtenerImg() throws IOException {
 		String ruta = home + mesaConfig.getRutacaptura();
-		File tmpImg = new File(ruta+"tmpImg.png");		
+		File tmpImg = new File(ruta + "\\tmpImg.png");
 		InputStream in = FileUtils.openInputStream(tmpImg);
 		byte[] bArry = IOUtils.toByteArray(in);
-		
+
 		StringBuilder sb = new StringBuilder();
 		sb.append("data:image/png;base64,");
 		sb.append(StringUtils.newStringUtf8(Base64.encodeBase64(bArry, false)));
-		String encoded = sb.toString();	
-		
+		String encoded = sb.toString();
+
 		return encoded;
 	}
 

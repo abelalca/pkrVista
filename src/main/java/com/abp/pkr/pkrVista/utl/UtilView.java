@@ -6,6 +6,8 @@ package com.abp.pkr.pkrVista.utl;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,6 +15,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import javax.imageio.ImageIO;
+import javax.imageio.stream.FileImageInputStream;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.LoggerFactory;
@@ -40,21 +43,21 @@ public class UtilView {
 	public static List<File> obtenerFilesDir(File dir) throws IOException {
 		List<File> files = new ArrayList<File>();
 		File[] listOfFiles = dir.listFiles();
-		if(!ArrayUtils.isEmpty(listOfFiles)){
+		if (!ArrayUtils.isEmpty(listOfFiles)) {
 			for (File file : listOfFiles) {
 				if (file.isFile()) {
 					files.add(file);
 				}
 			}
-			//ordenamos por nombre de archivo
-			Comparator<File> comNombre = new Comparator<File>(){
+			// ordenamos por nombre de archivo
+			Comparator<File> comNombre = new Comparator<File>() {
 				@Override
 				public int compare(File f1, File f2) {
 					// TODO Auto-generated method stub
 					return f1.getName().compareTo(f2.getName());
 				}
 			};
-			Collections.sort(files, comNombre);			
+			Collections.sort(files, comNombre);
 		}
 		return files;
 	}
@@ -121,14 +124,15 @@ public class UtilView {
 	public static BufferedImage recortarImagen(BufferedImage img, Rectangle rec) {
 		BufferedImage subImg = img;
 		if (rec != null) {
-			subImg = img.getSubimage((int) rec.getX(), (int) rec.getY(),
-					(int) rec.getWidth(), (int) rec.getHeight());
+			subImg = img.getSubimage((int) rec.getX(), (int) rec.getY(), (int) rec.getWidth(), (int) rec.getHeight());
 		}
-//		Conversiona a blanco y negro toma demasiado tiempo, no es recomendrble hacerlo
-//		BufferedImage imgBW = new BufferedImage(subImg.getWidth(), subImg.getHeight(), BufferedImage.TYPE_BYTE_BINARY);
-//		Graphics2D graphics = imgBW.createGraphics();
-//		graphics.drawImage(img, 0, 0, null);
-		
+		// Conversiona a blanco y negro toma demasiado tiempo, no es recomendrble
+		// hacerlo
+		// BufferedImage imgBW = new BufferedImage(subImg.getWidth(),
+		// subImg.getHeight(), BufferedImage.TYPE_BYTE_BINARY);
+		// Graphics2D graphics = imgBW.createGraphics();
+		// graphics.drawImage(img, 0, 0, null);
+
 		return subImg;
 	}
 

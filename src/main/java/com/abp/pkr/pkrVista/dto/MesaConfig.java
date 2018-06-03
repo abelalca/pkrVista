@@ -24,9 +24,10 @@ public class MesaConfig {
 	private List<Zona> mesa = new ArrayList<>();
 	private Zona posicion;
 	private Zona cartas;
+	private Zona numjug;
 
 	private String rutaPalos;
-	
+
 	private String formato;
 	private String margenerror;
 	private String sillahero;
@@ -197,6 +198,14 @@ public class MesaConfig {
 
 	public void setRutaPalos(String rutaPalos) {
 		this.rutaPalos = rutaPalos;
+	}
+
+	public Zona getNumjug() {
+		return numjug;
+	}
+
+	public void setNumjug(Zona numjug) {
+		this.numjug = numjug;
 	}
 
 }

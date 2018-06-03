@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
+import javax.sql.rowset.spi.TransactionalWriter;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -147,6 +148,21 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		}
 
 		
+		// Leer numero de jugadores
+		Zona numJug = mesaConfig.getNumjug();
+		List<Zona> configNumJug = new ArrayList<>();
+		configNumJug.add(numJug);
+		objArr = leerInfoPorOCR(screenImg, configNumJug, TIPO_DATO.INT, "NUM", factorResize);
+		if (ArrayUtils.isNotEmpty(objArr)) {
+			object = objArr[0];
+		}
+		Integer[] infoNumJug = Arrays.copyOf(objArr, objArr.length, Integer[].class);
+		if (ArrayUtils.isEmpty(infoNumJug)) {
+			throw new Exception("No se pudo leer numero de jugadores");
+		}
+		handInfoDto.setNumjug(Integer.valueOf(infoNumJug[0]));
+		
+		
 		// leer silla Hero en la mesa
 		String configSillaHero = mesaConfig.getSillahero();
 		Integer infoSillaHero = Integer.valueOf(configSillaHero);
@@ -177,7 +193,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 	 * @throws Exception
 	 */
 	private Object[] leerInfoPorOCR(BufferedImage screenImg, List<Zona> listaConfig, TIPO_DATO tipoDato,
-			String lengTesseract, int factorResize) {
+			String lengTesseract, int factorResize) throws Exception{
 
 		List<Object> infoList = new ArrayList<>();
 
@@ -197,7 +213,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 			if (lengTesseract != null && lengTesseract.equals("PKR")) {
 				instance.setLanguage(mesaConfig.getTessLeng());
 			} else if (lengTesseract != null && lengTesseract.equals("NUM")) {
-				instance.setTessVariable("tessedit_char_whitelist","0123456789.");
+				instance.setTessVariable("tessedit_char_whitelist","0123456789.,");
 				List<String> configs = new ArrayList<>();
 				configs.add("digits");
 				instance.setConfigs(configs);
@@ -219,6 +235,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 				String result = instance.doOCR(recortada);
 
 				result = result.replaceAll("[\n]+", "\r").replaceAll("\\s", "");
+				log.debug("obteniendo valor por OCR, valor: {}", result);
 				if (StringUtils.isNotBlank(result)) {
 					switch (tipoDato) {
 					// entero
@@ -227,7 +244,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 						break;
 					// decimal
 					case DEC:
-						infoList.add(Double.valueOf(result));
+						infoList.add(Double.valueOf(result.replaceAll(",", ".")));
 						break;
 					// string
 					case STR:
@@ -240,6 +257,8 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 				}
 			} catch (Exception e) {
 				log.error(e.getMessage());
+				throw new Exception("Error al leer imagen por OCR: "+ e.getMessage());
+				
 			}
 		}
 		Object[] arr = new Object[infoList.size()];
