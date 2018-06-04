@@ -6,6 +6,8 @@ package com.abp.pkr.pkrVista.ngc;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -17,6 +19,7 @@ import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 import javax.sql.rowset.spi.TransactionalWriter;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.LoggerFactory;
@@ -27,6 +30,8 @@ import com.abp.pkr.pkrVista.dto.MesaConfig;
 import com.abp.pkr.pkrVista.dto.MesaConfig.Zona;
 import com.abp.pkr.pkrVista.ngc.CapturadorNgc.TIPO_DATO;
 import com.abp.pkr.pkrVista.utl.UtilView;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import ch.qos.logback.classic.Logger;
 import net.coobird.thumbnailator.Thumbnails;
@@ -342,16 +347,15 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		try {
 			handInfoDto = procesarZonas(screenImg);
 		} catch (Exception e) {
-			// Guardar Imagen
-			String ruta = home + mesaConfig.getRutacaptura()+"\\bugs";
-			Long date = new Date().getTime();			
+			// Guardar Imagen e info del error
+			String ruta = home + mesaConfig.getRutacaptura() + "\\bugs";
+			Long date = new Date().getTime();
 			UtilView.guardarImagen(screenImg, ruta + "\\" + date.toString() + ".png");
+			FileUtils.writeStringToFile(new File( ruta + "\\" + date.toString()), e.getMessage());
 			handInfoDto = null;
 		}
 
 		return handInfoDto;
 	}
-
-
 
 }
