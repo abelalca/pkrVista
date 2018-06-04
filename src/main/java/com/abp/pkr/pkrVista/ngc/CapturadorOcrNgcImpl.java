@@ -5,13 +5,16 @@ package com.abp.pkr.pkrVista.ngc;
 
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
+import javax.imageio.ImageIO;
 import javax.sql.rowset.spi.TransactionalWriter;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -23,6 +26,7 @@ import com.abp.pkr.pkrVista.dto.HandInfoDto;
 import com.abp.pkr.pkrVista.dto.MesaConfig;
 import com.abp.pkr.pkrVista.dto.MesaConfig.Zona;
 import com.abp.pkr.pkrVista.ngc.CapturadorNgc.TIPO_DATO;
+import com.abp.pkr.pkrVista.utl.UtilView;
 
 import ch.qos.logback.classic.Logger;
 import net.coobird.thumbnailator.Thumbnails;
@@ -87,7 +91,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		Zona configCartas = mesaConfig.getCartas();
 		List<Zona> configCartasHero = new ArrayList<>();
 		configCartasHero.add(configCartas);
-		objArr = leerInfoPorOCR(screenImg, configCartasHero, TIPO_DATO.STR, "CARTAS", 2);
+		objArr = leerInfoPorOCR(screenImg, configCartasHero, TIPO_DATO.STR, "CARTAS", 2, handInfoDto);
 		String infoCartas = "";
 		if (ArrayUtils.isNotEmpty(objArr)) {
 			object = objArr[0];
@@ -95,6 +99,10 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 			infoCartas = infoCartas.replace("10", "T");
 		} else {
 			throw new Exception("No se pudo reconocer cartas");
+		}
+
+		if (infoCartas.length() != 2) {
+			throw new Exception("Error al leer cartas");
 		}
 
 		// *** obtener palos por analisis de colores de las cartas
@@ -114,12 +122,26 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 			throw new Exception("No se pudo leer las cartas y/o palos");
 		}
 
+		// Leer numero de jugadores
+		Zona numJug = mesaConfig.getNumjug();
+		List<Zona> configNumJug = new ArrayList<>();
+		configNumJug.add(numJug);
+		objArr = leerInfoPorOCR(screenImg, configNumJug, TIPO_DATO.INT, "NUM", factorResize, handInfoDto);
+		if (ArrayUtils.isNotEmpty(objArr)) {
+			object = objArr[0];
+		}
+		Integer[] infoNumJug = Arrays.copyOf(objArr, objArr.length, Integer[].class);
+		if (ArrayUtils.isEmpty(infoNumJug)) {
+			throw new Exception("No se pudo leer numero de jugadores");
+		}
+		handInfoDto.setNumjug(Integer.valueOf(infoNumJug[0]));
+
 		// Leer info stacks
 		List<Zona> configStacks = mesaConfig.getStack();
-		objArr = leerInfoPorOCR(screenImg, configStacks, TIPO_DATO.DEC, "NUM", factorResize);
+		objArr = leerInfoPorOCR(screenImg, configStacks, TIPO_DATO.DEC, "NUM", factorResize, handInfoDto);
 		Double[] infoStacks = Arrays.copyOf(objArr, objArr.length, Double[].class);
 		handInfoDto.setStacksBb(infoStacks);
-		if (ArrayUtils.isEmpty(infoStacks)) {
+		if (ArrayUtils.isEmpty(infoStacks) || infoStacks.length < 2) {
 			throw new Exception("Stacks vacios o null");
 		}
 
@@ -127,7 +149,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		Zona configPosicionHero = mesaConfig.getPosicion();
 		List<Zona> configPos = new ArrayList<>();
 		configPos.add(configPosicionHero);
-		objArr = leerInfoPorOCR(screenImg, configPos, TIPO_DATO.STR, "POS", factorResize);
+		objArr = leerInfoPorOCR(screenImg, configPos, TIPO_DATO.STR, "POS", factorResize, handInfoDto);
 		if (ArrayUtils.isNotEmpty(objArr)) {
 			object = objArr[0];
 		}
@@ -140,60 +162,44 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		} else if (infoPHero.trim().contains("BU")) {
 			infoPosiHero = 2;
 		}
-		
 
 		handInfoDto.setPosHero(infoPosiHero);
 		if (infoPosiHero == -1) {
 			throw new Exception("No se pudo leer posicion de Hero");
 		}
 
-		
-		// Leer numero de jugadores
-		Zona numJug = mesaConfig.getNumjug();
-		List<Zona> configNumJug = new ArrayList<>();
-		configNumJug.add(numJug);
-		objArr = leerInfoPorOCR(screenImg, configNumJug, TIPO_DATO.INT, "NUM", factorResize);
-		if (ArrayUtils.isNotEmpty(objArr)) {
-			object = objArr[0];
-		}
-		Integer[] infoNumJug = Arrays.copyOf(objArr, objArr.length, Integer[].class);
-		if (ArrayUtils.isEmpty(infoNumJug)) {
-			throw new Exception("No se pudo leer numero de jugadores");
-		}
-		handInfoDto.setNumjug(Integer.valueOf(infoNumJug[0]));
-		
-		
 		// leer silla Hero en la mesa
 		String configSillaHero = mesaConfig.getSillahero();
 		Integer infoSillaHero = Integer.valueOf(configSillaHero);
 		handInfoDto.setSillaHero(infoSillaHero);
-		
+
 		// Leer posicion del button en el array de stacks
-		int posBu = 2;
-		int diffBu = infoPosiHero - posBu;
-		Integer posHeroMesa = null;
-		if (diffBu >= 0) {
-			posHeroMesa = infoSillaHero + diffBu;
-		} else {
-			if (infoSillaHero + diffBu >= 0) {
-				posHeroMesa = infoSillaHero + diffBu;
-			} else {
-				posHeroMesa = infoSillaHero + Math.abs(infoSillaHero + diffBu);
-			}
-		}
-		handInfoDto.setBtnPos(posHeroMesa);
-		
+		// int posBu = 2;
+		// int diffBu = infoPosiHero - posBu;
+		// Integer posHeroMesa = null;
+		// if (diffBu >= 0) {
+		// posHeroMesa = infoSillaHero + diffBu;
+		// } else {
+		// if (infoSillaHero + diffBu >= 0) {
+		// posHeroMesa = infoSillaHero + diffBu;
+		// } else {
+		// posHeroMesa = infoSillaHero + Math.abs(infoSillaHero + diffBu);
+		// }
+		// }
+		// handInfoDto.setBtnPos(posHeroMesa);
+
 		return handInfoDto;
 
 	}
 
 	/**
 	 * @author Alesso
+	 * @param handInfoDto
 	 * @date 29018-05-27
 	 * @throws Exception
 	 */
 	private Object[] leerInfoPorOCR(BufferedImage screenImg, List<Zona> listaConfig, TIPO_DATO tipoDato,
-			String lengTesseract, int factorResize) throws Exception{
+			String lengTesseract, int factorResize, HandInfoDto handInfoDto) throws Exception {
 
 		List<Object> infoList = new ArrayList<>();
 
@@ -213,7 +219,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 			if (lengTesseract != null && lengTesseract.equals("PKR")) {
 				instance.setLanguage(mesaConfig.getTessLeng());
 			} else if (lengTesseract != null && lengTesseract.equals("NUM")) {
-				instance.setTessVariable("tessedit_char_whitelist","0123456789.,");
+				instance.setTessVariable("tessedit_char_whitelist", "0123456789.,");
 				List<String> configs = new ArrayList<>();
 				configs.add("digits");
 				instance.setConfigs(configs);
@@ -244,7 +250,19 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 						break;
 					// decimal
 					case DEC:
-						infoList.add(Double.valueOf(result.replaceAll(",", ".")));
+						result = result.replaceAll(",", ".");
+						if (result.substring(result.length() - 1).equals(".")) {
+							result = result.substring(0, result.length() - 1);
+						}
+						try {
+							infoList.add(Double.valueOf(result));
+						} catch (Exception e) {
+							if (handInfoDto.getNumjug() == 2) {
+								// no se hace nada
+							} else {
+								throw e;
+							}
+						}
 						break;
 					// string
 					case STR:
@@ -257,8 +275,8 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 				}
 			} catch (Exception e) {
 				log.error(e.getMessage());
-				throw new Exception("Error al leer imagen por OCR: "+ e.getMessage());
-				
+				throw new Exception("Error al leer imagen por OCR: " + e.getMessage());
+
 			}
 		}
 		Object[] arr = new Object[infoList.size()];
@@ -266,9 +284,35 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		return arr;
 	}
 
-	// **********************VIEJO*************************
-	// **********************VIEJO*************************
-	// **********************VIEJO*************************
+	/**
+	 * @author abpubuntu
+	 * @date Jun 5, 2017
+	 * @return
+	 * @throws Exception
+	 */
+	public String guardarInfo() throws Exception {
+		String ruta = home + mesaConfig.getRutacaptura();
+		Long date = new Date().getTime();
+
+		File tmpImg = new File(ruta + "\\tmpImg.png");
+		File tmpJson = new File(ruta + "\\tmpJson");
+
+		BufferedImage bf = ImageIO.read(tmpImg);
+
+		File nuevaImg = new File(ruta + "\\" + date.toString() + ".png");
+		File nuevaJson = new File(ruta + "\\" + date.toString());
+
+		if (nuevaImg.exists() && nuevaJson.exists())
+			throw new java.io.IOException("files exists");
+
+		UtilView.guardarImagen(bf, ruta + "\\" + date.toString() + ".png");
+		boolean successJson = tmpJson.renameTo(nuevaJson);
+
+		if (successJson)
+			return date.toString();
+
+		return null;
+	}
 
 	/**
 	 * @author abpubuntu
@@ -295,10 +339,19 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		BufferedImage screenImg = capturador.capturarScreenZona(zona);
 
 		// procesamos zonas
-		handInfoDto = procesarZonas(screenImg);
+		try {
+			handInfoDto = procesarZonas(screenImg);
+		} catch (Exception e) {
+			// Guardar Imagen
+			String ruta = home + mesaConfig.getRutacaptura()+"\\bugs";
+			Long date = new Date().getTime();			
+			UtilView.guardarImagen(screenImg, ruta + "\\" + date.toString() + ".png");
+			handInfoDto = null;
+		}
 
 		return handInfoDto;
 	}
+
 
 
 }

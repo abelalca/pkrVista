@@ -11,13 +11,11 @@ import java.awt.Robot;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 
 import org.slf4j.LoggerFactory;
@@ -236,19 +234,30 @@ public class CapturadorNgcImpl implements CapturadorNgc {
 			throw e;
 		}
 	}
-	// ********************* VIEJO ***********************************//
-	// ********************* VIEJO ***********************************//
-	// ********************* VIEJO ***********************************//
 
-	// *********************BufferedImgenes*******************************************
-	// protected static Map<String, BufferedImage> buffScreen = null;
-	// protected static Map<String, BufferedImage> buffStacks = null;
-	// protected static Map<String, BufferedImage> buffHistory = null;
-	// protected static Map<String, BufferedImage> buffTourneyNum = null;
-	// protected static Map<String, BufferedImage> buffPosHero = null;
-	// protected static Map<String, BufferedImage> buffTipoMesa = null;
+	/**
+	 * Me dice sobre que mesa se encuentra el mouse
+	 * 
+	 * @author Alesso
+	 * @date May 27, 2018
+	 * @return
+	 */
+	protected Zona mesaMouse() {
+		Point p = MouseInfo.getPointerInfo().getLocation();
+		List<Zona> mesas = mesaConfig.getMesa();
+		Zona mesaActual = null;
+		for (Zona mesa : mesas) {
 
-	// *****************************************************************************
+			if (p.getX() > mesa.getX() && p.getX() < (mesa.getX() + mesa.getAncho())) {
+				if (p.getY() > mesa.getY() && p.getY() < (mesa.getY() + mesa.getAlto())) {
+					mesaActual = new Zona();
+					mesaActual.setX(mesa.getX());
+					mesaActual.setY(mesa.getY());
+				}
+			}
+		}
+		return mesaActual;
+	}
 
 	/**
 	 * Captura pantalla de determinada zona
@@ -281,62 +290,11 @@ public class CapturadorNgcImpl implements CapturadorNgc {
 		return screenImage;
 	}
 
-	/**
-	 * Capturamos la info de todas las coordendas, estas estan en un archivo de
-	 * config
-	 * 
-	 * @author abpubuntu
-	 * @date May 10, 2017
-	 * @throws Exception
-	 */
 	@Override
 	public HandInfoDto extraerMesaInfo() throws Exception {
-		HandInfoDto handInfoDto = null;
-
-		// mesa que estoy parado, debemos obtener las coord del mouse para
-		// saber en que mesa estamos
-		Zona mesaActual = mesaMouse();
-
-		// Si el mouse no esta dentro de ninguna mesa
-		if (mesaActual == null) {
-			return handInfoDto;
-		}
-
-		// capturo screen
-		Rectangle zona = new Rectangle(mesaActual.getX(), mesaActual.getY(), mesaActual.getAncho(),
-				mesaActual.getAlto());
-		BufferedImage img = capturarScreenZona(zona);
-
-		// procesamos zonas
-//		handInfoDto = procesarZonas(img);
-
-		return handInfoDto;
-
+		// TODO Auto-generated method stub
+		return null;
 	}
 
-
-	/**
-	 * Me dice sobre que mesa se encuentra el mouse
-	 * 
-	 * @author Alesso
-	 * @date May 27, 2018
-	 * @return
-	 */
-	protected Zona mesaMouse() {
-		Point p = MouseInfo.getPointerInfo().getLocation();
-		List<Zona> mesas = mesaConfig.getMesa();
-		Zona mesaActual = null;
-		for (Zona mesa : mesas) {
-
-			if (p.getX() > mesa.getX() && p.getX() < (mesa.getX() + mesa.getAncho())) {
-				if (p.getY() > mesa.getY() && p.getY() < (mesa.getY() + mesa.getAlto())) {
-					mesaActual = new Zona();
-					mesaActual.setX(mesa.getX());
-					mesaActual.setY(mesa.getY());
-				}
-			}
-		}
-		return mesaActual;
-	}
 
 }

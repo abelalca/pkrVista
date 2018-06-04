@@ -72,35 +72,6 @@ public class CapturadorNgcImplPru extends CapturadorOcrNgcImpl {
 		return handInfoDto;
 	}
 
-	/**
-	 * @author abpubuntu
-	 * @date Jun 5, 2017
-	 * @return
-	 * @throws Exception
-	 */
-	public String guardarInfo() throws Exception {
-		String ruta = home + mesaConfig.getRutacaptura();
-		Long date = new Date().getTime();
-
-		File tmpImg = new File(ruta + "\\tmpImg.png");		
-		File tmpJson = new File(ruta + "\\tmpJson");
-		
-		BufferedImage bf = ImageIO.read(tmpImg); 
-
-		File nuevaImg = new File(ruta + "\\" + date.toString() + ".png");
-		File nuevaJson = new File(ruta + "\\" + date.toString());
-
-		if (nuevaImg.exists() && nuevaJson.exists())
-			throw new java.io.IOException("files exists");
-
-		UtilView.guardarImagen(bf, ruta + "\\" + date.toString() + ".png");
-		boolean successJson = tmpJson.renameTo(nuevaJson);
-
-		if (successJson)
-			return date.toString();
-
-		return null;
-	}
 
 	public String obtenerImg() throws IOException {
 		String ruta = home + mesaConfig.getRutacaptura();
