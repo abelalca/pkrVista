@@ -47,6 +47,15 @@ public class MesaConfig {
 		private int y;
 		private int ancho;
 		private int alto;
+		private boolean lecturaValida;
+
+		public boolean isLecturaValida() {
+			return lecturaValida;
+		}
+
+		public void setLecturaValida(boolean lecturaValida) {
+			this.lecturaValida = lecturaValida;
+		}
 
 		public int getX() {
 			return x;

@@ -178,20 +178,41 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		Integer infoSillaHero = Integer.valueOf(configSillaHero);
 		handInfoDto.setSillaHero(infoSillaHero);
 
-		// Leer posicion del button en el array de stacks
-		// int posBu = 2;
-		// int diffBu = infoPosiHero - posBu;
-		// Integer posHeroMesa = null;
-		// if (diffBu >= 0) {
-		// posHeroMesa = infoSillaHero + diffBu;
-		// } else {
-		// if (infoSillaHero + diffBu >= 0) {
-		// posHeroMesa = infoSillaHero + diffBu;
-		// } else {
-		// posHeroMesa = infoSillaHero + Math.abs(infoSillaHero + diffBu);
-		// }
-		// }
-		// handInfoDto.setBtnPos(posHeroMesa);
+		// posicion de los jugadores eliminados
+		List<Integer> posEliminados = new ArrayList<>();
+		int i=0;
+		for (Zona zona : configStacks) {
+			if(!zona.isLecturaValida()) {
+				posEliminados.add(i);
+			}
+		}
+		
+		//Leer posicion del button en el array de stacks			
+		int posBu= -1;
+		switch (handInfoDto.getNumjug()) {
+		case 3:
+			if(infoPosiHero==0) {
+				posBu = 2;
+			}else if (infoPosiHero==1) {
+				posBu = 0;
+			}else if (infoPosiHero==2) {
+				posBu = 1;
+			}
+			break;
+		case 2:
+			if(posEliminados.get(0) == 0 && infoPosiHero==1) {
+				posBu = 0;
+			} else if (posEliminados.get(0) == 0 && infoPosiHero==0) {
+				posBu = 1;
+			} else if (posEliminados.get(0) == 2 && infoPosiHero==1) {
+				posBu = 1;
+			} else if (posEliminados.get(0) == 2 && infoPosiHero==0) {
+				posBu = 0;
+			}
+		default:
+			break;
+		}
+		 handInfoDto.setBtnPos(posBu);
 
 		return handInfoDto;
 
@@ -210,6 +231,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 
 		// itero cada posicion de coordenadas
 		for (Zona zona : listaConfig) {
+			zona.setLecturaValida(false);
 			// recortamos subimagen
 			BufferedImage recortada = screenImg.getSubimage(zona.getX(), zona.getY(), zona.getAncho(), zona.getAlto());
 			// UtilView.guardarImagen(recortada,
@@ -278,6 +300,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 						break;
 					}
 				}
+				zona.setLecturaValida(true);
 			} catch (Exception e) {
 				log.error(e.getMessage());
 				throw new Exception("Error al leer imagen por OCR: " + e.getMessage());
@@ -351,7 +374,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 			String ruta = home + mesaConfig.getRutacaptura() + "\\bugs";
 			Long date = new Date().getTime();
 			UtilView.guardarImagen(screenImg, ruta + "\\" + date.toString() + ".png");
-			FileUtils.writeStringToFile(new File( ruta + "\\" + date.toString()), e.getMessage());
+			FileUtils.writeStringToFile(new File(ruta + "\\" + date.toString()), e.getMessage());
 			handInfoDto = null;
 		}
 
