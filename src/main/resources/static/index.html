@@ -2,21 +2,29 @@
 <html ng-app="app">
 <head>
 <meta charset="UTF-8">
-<title>PRUEBAS</title>
+<title>PKRSOFT</title>
 
 <!-- load bootstrap and fontawesome via CDN -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet"
-	href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" />
-<link rel="stylesheet"
-	href="//netdna.bootstrapcdn.com/font-awesome/4.0.0/css/font-awesome.css" />
-<!-- load angular and angular route via CDN -->
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <script
-	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.25/angular.min.js"></script>
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script
-	src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.25/angular-route.js"></script>
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
 
 
 <script src="controlador.js"></script>
+
+<style>
+.row.row-eq-height {
+	display: -webkit-box;
+	display: -webkit-flex;
+	display: -ms-flexbox;
+	display: flex;
+}
+</style>
 
 
 </head>
@@ -25,36 +33,146 @@
 
 	<div class="container">
 		<div class="row">
-			<div class="navbar navbar-default navbar-fixed-top col-md-12">
-				<div class="navbar-inner">
-					<h1 align="center">Pruebas Tiempo Real pkrVista</h1>
+			<h1 align="center">PkrSoft</h1>
+		</div>
+
+		<div class="row">
+			<ul class="nav nav-tabs">
+				<li class="active"><a data-toggle="tab" href="#tabReal">Real
+						Time</a></li>
+				<li><a data-toggle="tab" href="#tabTest">Test Screen</a></li>
+			</ul>
+		</div>
+
+		<div class="row">
+			<div class="tab-content">
+				<div id="tabReal" class="tab-pane fade in active">
+					<div class="container-fluid">
+						<div class="row">
+							<h3>Real Time</h3>
+						</div>
+						<div class="row">
+							<div class="">
+								<button type="button" class="btn btn-success"
+									ng-click="infoTiempoReal()">Start</button>
+								<button type="button" class="btn btn-danger"
+									ng-click="guardarInfo()">Stop</button>
+							</div>
+						</div>
+						<div class="row"
+							style="margin-top: 25px; border: 1px solid; border-color: black; padding-top: 10px; padding-bottom: 10px;">
+							<div class="container-fluid">
+								<div class="row justify-content-xs-center">
+									<div class="col col-xs-3" align="center">
+										<h4>NumJug</h4>
+									</div>
+									<div class="col col-xs-6" align="center">
+										<h3>Posicion</h3>
+									</div>
+									<div class="col col-xs-3" align="center">
+										<h4>Stack</h4>
+									</div>
+								</div>
+								<div class="row justify-content-xs-center">
+									<div class="col col-xs-3" align="center"></div>
+									<div class="col col-xs-6" align="center">
+										<h1>Hand</h1>
+									</div>
+									<div class="col col-xs-3" align="center"></div>
+								</div>
+								<hr
+									style="width: 75%; color: green; height: 1px; background-color: green;" />
+								<div>
+									<div class="row row-eq-height">
+										<div class="col col-xs-2" align="center">
+											<div class="row justify-content-xs-center" align="center">
+												<h3>EffQA1</h3>
+											</div>
+											<div class="row justify-content-xs-center" align="center">
+												<h4>SB</h4>
+											</div>
+										</div>
+										<div class="col col-xs-10" align="center"
+											style="border: solid; margin-right: 15px;">
+											<div class="row justify-content-xs-center" align="center">
+												<h6>TipoPlyr</h6>
+											</div>
+											<hr
+												style="width: 100%; color: grey; height: 1px; background-color: grey;" />
+											<div class="row justify-content-xs-center" align="center">
+												<h5>ACCIONQA1</h5>
+											</div>
+											<div class="row justify-content-xs-center" align="center">
+												<hr
+													style="width: 100%; color: black; height: 2px; background-color: black;">
+											</div>
+											<div class="row justify-content-xs-center" align="center">
+												<h5>ACCIONQA1_PF</h5>
+											</div>
+										</div>
+									</div>
+								</div>
+								<hr
+									style="width: 100%; color: black; height: 3px; background-color: black;" />
+								<div>
+									<div class="row row-eq-height">
+										<div class="col col-xs-2" align="center">
+											<div class="row justify-content-xs-center" align="center">
+												<h3>EffQA2</h3>
+											</div>
+											<div class="row justify-content-xs-center" align="center">
+												<h4>BB</h4>
+											</div>
+										</div>
+										<div class="col col-xs-10" align="center"
+											style="border: solid; margin-right: 15px;">
+											<div class="row justify-content-xs-center" align="center">
+												<h6>TipoPlyr</h6>
+											</div>
+											<hr
+												style="width: 100%; color: grey; height: 1px; background-color: grey;" />
+											<div class="row justify-content-xs-center" align="center">
+												<h5>ACCIONQA2</h5>
+											</div>
+											<div class="row justify-content-xs-center" align="center">
+												<hr
+													style="width: 100%; color: black; height: 2px; background-color: black;" />
+											</div>
+											<div class="row justify-content-xs-center" align="center">
+												<h5>ACCIONQA2_PF</h5>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div id="tabTest" class="tab-pane fade">
+					<h3>Tester</h3>
+					<div class="row">
+						<div class="col-xs-8 col-xs-offset-4">
+							<button type="button" class="btn btn-success"
+								ng-click="infoTiempoReal()">ScrenShoot</button>
+							<button type="button" class="btn btn-primary"
+								ng-click="guardarInfo()">Guardar</button>
+						</div>
+					</div>
+					<div class="row" style="margin-top: 15px;">
+						<div class="col-md-12">
+							<pre>{{res}}</pre>
+						</div>
+					</div>
+					<div class="row" style="margin-top: 15px;">
+						<div class="col-md-12" ng-init="imgTmp = 'img/tmpImg.png'">
+							<img ng-src="{{imgTmp}}"
+								style="max-width: 100%; max-height: 100%" />
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
 	</div>
-
-	<div class="row" style="padding-top: 100px">
-		<div class="col-sm-8 col-sm-offset-4">
-			<button type="button" class="btn btn-success"
-				ng-click="infoTiempoReal()">ScrenShoot</button>
-			<button type="button" class="btn btn-primary"
-				ng-click="guardarInfo()">Guardar</button>
-		</div>
-	</div>
-
-	<div class="row" style="margin-top: 15px;">
-		<div class="col-md-12">
-			<pre>{{res}}</pre>
-		</div>
-	</div>
-	<div class="row" style="margin-top: 15px;">
-		<div class="col-md-12" ng-init="imgTmp = 'img/tmpImg.png'">
-			<img ng-src="{{imgTmp}}"
-				style="max-width: 100%; max-height: 100%" />
-		</div>
-	</div>
-
-
 
 </body>
 </html>

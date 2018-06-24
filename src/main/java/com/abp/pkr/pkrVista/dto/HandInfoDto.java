@@ -12,6 +12,7 @@ public class HandInfoDto {
 	private String hand;
 	// los arrays deben tener length de los jugadores vivos en la mesa
 	private Double[] stacksBb;
+	private boolean[] isActivo;
 	private Integer numjug;
 
 	// tiempo de respuesta del servicio
@@ -123,5 +124,10 @@ public class HandInfoDto {
 	public void setNumjug(Integer numjug) {
 		this.numjug = numjug;
 	}
+
+	public boolean[] getIsActivo() {
+		return isActivo;
+	}
+
 
 }

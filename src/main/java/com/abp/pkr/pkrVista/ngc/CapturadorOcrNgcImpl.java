@@ -180,39 +180,44 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 
 		// posicion de los jugadores eliminados
 		List<Integer> posEliminados = new ArrayList<>();
-		int i=0;
-		for (Zona zona : configStacks) {
-			if(!zona.isLecturaValida()) {
-				posEliminados.add(i);
-			}
-		}
 		
-		//Leer posicion del button en el array de stacks			
-		int posBu= -1;
+		int i = 0;
+		for (Zona zona : configStacks) {
+			if (!zona.isLecturaValida()) {
+				posEliminados.add(i);
+				handInfoDto.getIsActivo()[i] = false;
+			} else {
+				handInfoDto.getIsActivo()[i]= true;
+			}
+			i++;
+		}
+
+		// Leer posicion del button en el array de stacks
+		int posBu = -1;
 		switch (handInfoDto.getNumjug()) {
 		case 3:
-			if(infoPosiHero==0) {
+			if (infoPosiHero == 0) {
 				posBu = 2;
-			}else if (infoPosiHero==1) {
+			} else if (infoPosiHero == 1) {
 				posBu = 0;
-			}else if (infoPosiHero==2) {
+			} else if (infoPosiHero == 2) {
 				posBu = 1;
 			}
 			break;
 		case 2:
-			if(posEliminados.get(0) == 0 && infoPosiHero==1) {
+			if (posEliminados.get(0) == 0 && infoPosiHero == 1) {
 				posBu = 0;
-			} else if (posEliminados.get(0) == 0 && infoPosiHero==0) {
+			} else if (posEliminados.get(0) == 0 && infoPosiHero == 0) {
 				posBu = 1;
-			} else if (posEliminados.get(0) == 2 && infoPosiHero==1) {
+			} else if (posEliminados.get(0) == 2 && infoPosiHero == 1) {
 				posBu = 1;
-			} else if (posEliminados.get(0) == 2 && infoPosiHero==0) {
+			} else if (posEliminados.get(0) == 2 && infoPosiHero == 0) {
 				posBu = 0;
 			}
 		default:
 			break;
 		}
-		 handInfoDto.setBtnPos(posBu);
+		handInfoDto.setBtnPos(posBu);
 
 		return handInfoDto;
 
