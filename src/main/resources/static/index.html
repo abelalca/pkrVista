@@ -13,6 +13,9 @@
 <script
 	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
+<script
+	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+
 
 
 <script src="controlador.js"></script>
@@ -46,108 +49,98 @@
 
 		<div class="row">
 			<div class="tab-content">
+
+				<!-- 			primera tab -->
 				<div id="tabReal" class="tab-pane fade in active">
-					<div class="container-fluid">
-						<div class="row">
-							<h3>Real Time</h3>
-						</div>
-						<div class="row">
-							<div class="">
-								<button type="button" class="btn btn-success"
-									ng-click="infoTiempoReal()">Start</button>
-								<button type="button" class="btn btn-danger"
-									ng-click="guardarInfo()">Stop</button>
-							</div>
-						</div>
-						<div class="row"
-							style="margin-top: 25px; border: 1px solid; border-color: black; padding-top: 10px; padding-bottom: 10px;">
-							<div class="container-fluid">
-								<div class="row justify-content-xs-center">
-									<div class="col col-xs-3" align="center">
-										<h4>NumJug</h4>
-									</div>
-									<div class="col col-xs-6" align="center">
-										<h3>Posicion</h3>
-									</div>
-									<div class="col col-xs-3" align="center">
-										<h4>Stack</h4>
-									</div>
-								</div>
-								<div class="row justify-content-xs-center">
-									<div class="col col-xs-3" align="center"></div>
-									<div class="col col-xs-6" align="center">
-										<h1>Hand</h1>
-									</div>
-									<div class="col col-xs-3" align="center"></div>
-								</div>
-								<hr
-									style="width: 75%; color: green; height: 1px; background-color: green;" />
-								<div>
-									<div class="row row-eq-height">
-										<div class="col col-xs-2" align="center">
-											<div class="row justify-content-xs-center" align="center">
-												<h3>EffQA1</h3>
-											</div>
-											<div class="row justify-content-xs-center" align="center">
-												<h4>SB</h4>
-											</div>
-										</div>
-										<div class="col col-xs-10" align="center"
-											style="border: solid; margin-right: 15px;">
-											<div class="row justify-content-xs-center" align="center">
-												<h6>TipoPlyr</h6>
-											</div>
-											<hr
-												style="width: 100%; color: grey; height: 1px; background-color: grey;" />
-											<div class="row justify-content-xs-center" align="center">
-												<h5>ACCIONQA1</h5>
-											</div>
-											<div class="row justify-content-xs-center" align="center">
-												<hr
-													style="width: 100%; color: black; height: 2px; background-color: black;">
-											</div>
-											<div class="row justify-content-xs-center" align="center">
-												<h5>ACCIONQA1_PF</h5>
-											</div>
-										</div>
-									</div>
-								</div>
-								<hr
-									style="width: 100%; color: black; height: 3px; background-color: black;" />
-								<div>
-									<div class="row row-eq-height">
-										<div class="col col-xs-2" align="center">
-											<div class="row justify-content-xs-center" align="center">
-												<h3>EffQA2</h3>
-											</div>
-											<div class="row justify-content-xs-center" align="center">
-												<h4>BB</h4>
-											</div>
-										</div>
-										<div class="col col-xs-10" align="center"
-											style="border: solid; margin-right: 15px;">
-											<div class="row justify-content-xs-center" align="center">
-												<h6>TipoPlyr</h6>
-											</div>
-											<hr
-												style="width: 100%; color: grey; height: 1px; background-color: grey;" />
-											<div class="row justify-content-xs-center" align="center">
-												<h5>ACCIONQA2</h5>
-											</div>
-											<div class="row justify-content-xs-center" align="center">
-												<hr
-													style="width: 100%; color: black; height: 2px; background-color: black;" />
-											</div>
-											<div class="row justify-content-xs-center" align="center">
-												<h5>ACCIONQA2_PF</h5>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
+					<div class="container-fluid" style="margin-top: 10px;">
+						<button type="button" class="btn btn-success">Start</button>
+						<button type="button" class="btn btn-danger">Stop</button>
+						<button type="button" class="btn btn-light" ng-click=pruebaVista()>Test</button>
+						<table style="border-collapse: collapse; border: none; margin-top: 30px;">
+							<tbody>
+								<tr style="height: 20px;">
+									<td colspan="2"
+										style="height: 20px; text-align: center; background-color: #000000; color: #ffffff;"><span><strong>17bb</strong></span></td>
+									<td style="height: 20px; text-align: center;"></td>
+									<td colspan="2"
+										style="height: 20px; text-align: center; background-color: #000000; color: #ffffff;"><span><strong>15b</strong></span></td>
+								</tr>
+								<tr style="height: 20px;">
+									<td
+										style="height: 20px; text-align: center; background-color: orange; color: #ffffff;"><strong>DEF</strong></td>
+									<td
+										style="height: 20px; text-align: center; background-color: green; color: #ffffff;"><strong>REG</strong></td>
+									<td style="height: 20px; text-align: center;"></td>
+									<td
+										style="height: 20px; text-align: center; background-color: orange; color: #ffffff;"><strong>DEF</strong></td>
+									<td
+										style="height: 20px; text-align: center; background-color: green; color: #ffffff;"><strong>REG</strong></td>
+								</tr>
+								<tr style="height: 20px;">
+									<td
+										style="text-align: center; border: 1px solid; padding: 3px;"><strong>QA1sup</strong></td>
+									<td
+										style="text-align: center; border: 1px solid; padding: 3px;"><strong>QA1sup</strong></td>
+									<td></td>
+									<td
+										style="text-align: center; border: 1px solid; padding: 3px;"><strong>QA1inf</strong></td>
+									<td
+										style="text-align: center; border: 1px solid; padding: 3px;"><strong>QA1inf</strong></td>
+								</tr>
+								<tr style="height: 20px;">
+									<td
+										style="text-align: center; border: 1px solid; padding: 3px;">QA2sup</td>
+									<td
+										style="text-align: center; border: 1px solid; padding: 3px;">QA2sup</td>
+									<td></td>
+									<td
+										style="text-align: center; border: 1px solid; padding: 3px;">QA2inf</td>
+									<td
+										style="text-align: center; border: 1px solid; padding: 3px;">QA2inf</td>
+								</tr>
+								<tr style="height: 20px;">
+									<td
+										style="text-align: center; border: 2px solid red; padding: 3px;">QA3sup</td>
+									<td
+										style="text-align: center; border: 2px solid red; padding: 3px;">QA3sup</td>
+									<td></td>
+									<td
+										style="text-align: center; border: 2px solid red; padding: 3px;">QA3inf</td>
+									<td
+										style="text-align: center; border: 2px solid red; padding: 3px;">QA3inf</td>
+								</tr>
+								<tr style="height: 20px;">
+									<td></td>
+									<td></td>
+									<td style="text-align: center;"><strong>BU</strong></td>
+									<td></td>
+									<td></td>
+								</tr>
+								<tr style="height: 20px;">
+									<td></td>
+									<td></td>
+									<td style="text-align: center; border: 2px solid;">
+										<h1>
+											<span style="color: #ff0000; margin: 10px;">AKo</span>
+										</h1>
+									</td>
+									<td></td>
+									<td></td>
+								</tr>
+								<tr style="height: 20px;">
+									<td></td>
+									<td></td>
+									<td
+										style="text-align: center; background-color: #000000; color: #ffffff;"><span><strong>20bb</strong></span></td>
+									<td></td>
+									<td></td>
+								</tr>
+							</tbody>
+						</table>
 					</div>
 				</div>
+
+				<!-- 				segunda tab -->
 				<div id="tabTest" class="tab-pane fade">
 					<h3>Tester</h3>
 					<div class="row">
@@ -172,6 +165,9 @@
 				</div>
 			</div>
 		</div>
+
+	</div>
+	</div>
 	</div>
 
 </body>

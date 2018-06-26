@@ -1,6 +1,7 @@
 var app = angular.module('app', []);
 
 app.controller('mainCtl', function($scope, $http) {
+	
 
 	$scope.infoTiempoReal = function() {
 		$http.get('/pruebas/infoRealTime').then(function(response) {			
@@ -23,5 +24,14 @@ app.controller('mainCtl', function($scope, $http) {
 			 }
 		});
 	};
+	
+	$scope.pruebaVista = function() {
+		 $http.get('/pruebas/pruebaVista').then(function(response) {
+			 if(response){
+				 $scope.res = response.data;
+			 }
+		});		
+		
+	}
 
 });
