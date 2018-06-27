@@ -56,84 +56,62 @@
 						<button type="button" class="btn btn-success">Start</button>
 						<button type="button" class="btn btn-danger">Stop</button>
 						<button type="button" class="btn btn-light" ng-click=pruebaVista()>Test</button>
-						<table style="border-collapse: collapse; border: none; margin-top: 30px;">
+
+						<table
+							style="border-collapse: collapse; border: none; margin-top: 30px;">
 							<tbody>
 								<tr style="height: 20px;">
-									<td colspan="2"
-										style="height: 20px; text-align: center; background-color: #000000; color: #ffffff;"><span><strong>17bb</strong></span></td>
+									<td colspan="{{anchoColum}}"
+										style="height: 20px; text-align: center; background-color: #000000; color: #ffffff;"><span><strong>{{res.izqVsEffStack}}</strong></span></td>
 									<td style="height: 20px; text-align: center;"></td>
-									<td colspan="2"
-										style="height: 20px; text-align: center; background-color: #000000; color: #ffffff;"><span><strong>15b</strong></span></td>
+									<td colspan="{{anchoColum}}"
+										style="height: 20px; text-align: center; background-color: #000000; color: #ffffff;"><span><strong>{{res.derVsEffStack}}</strong></span></td>
 								</tr>
 								<tr style="height: 20px;">
-									<td
-										style="height: 20px; text-align: center; background-color: orange; color: #ffffff;"><strong>DEF</strong></td>
-									<td
-										style="height: 20px; text-align: center; background-color: green; color: #ffffff;"><strong>REG</strong></td>
+									<td ng-repeat="tipoPlayer in tipJug"
+										style="height: 20px; text-align: center; background-color: {{tipoPlayer.color}}; color: #ffffff;"><strong>{{tipoPlayer.tipo}}</strong></td>
 									<td style="height: 20px; text-align: center;"></td>
-									<td
-										style="height: 20px; text-align: center; background-color: orange; color: #ffffff;"><strong>DEF</strong></td>
-									<td
-										style="height: 20px; text-align: center; background-color: green; color: #ffffff;"><strong>REG</strong></td>
+									<td ng-repeat="tipoPlayer in tipJug | reverse"
+										style="height: 20px; text-align: center; background-color: {{tipoPlayer.color}}; color: #ffffff;"><strong>{{tipoPlayer.tipo}}</strong></td>
+								</tr>
+
+								<tr style="height: 20px;">
+									<td ng-repeat="accion in acc"
+										style="text-align: center; border: 1px solid; padding: 3px;"><strong>{{accion.izqQA1}}</strong></td>
+									<td style="height: 20px; text-align: center;"></td>
+									<td ng-repeat="accion in acc | reverse"
+										style="text-align: center; border: 1px solid; padding: 3px;"><strong>{{accion.derQA1}}</strong></td>
 								</tr>
 								<tr style="height: 20px;">
-									<td
-										style="text-align: center; border: 1px solid; padding: 3px;"><strong>QA1sup</strong></td>
-									<td
-										style="text-align: center; border: 1px solid; padding: 3px;"><strong>QA1sup</strong></td>
-									<td></td>
-									<td
-										style="text-align: center; border: 1px solid; padding: 3px;"><strong>QA1inf</strong></td>
-									<td
-										style="text-align: center; border: 1px solid; padding: 3px;"><strong>QA1inf</strong></td>
+									<td ng-repeat="accion in acc"
+										style="text-align: center; border: 1px solid; padding: 3px;"><strong>{{accion.izqQA2}}</strong></td>
+									<td style="height: 20px; text-align: center;"></td>
+									<td ng-repeat="accion in acc | reverse"
+										style="text-align: center; border: 1px solid; padding: 3px;"><strong>{{accion.derQA2}}</strong></td>
 								</tr>
 								<tr style="height: 20px;">
-									<td
-										style="text-align: center; border: 1px solid; padding: 3px;">QA2sup</td>
-									<td
-										style="text-align: center; border: 1px solid; padding: 3px;">QA2sup</td>
-									<td></td>
-									<td
-										style="text-align: center; border: 1px solid; padding: 3px;">QA2inf</td>
-									<td
-										style="text-align: center; border: 1px solid; padding: 3px;">QA2inf</td>
+									<td ng-repeat="accion in acc"
+										style="text-align: center; border: 3px solid; padding: 3px; border-color: red"><strong>{{accion.izqQA3}}</strong></td>
+									<td style="height: 20px; text-align: center;"></td>
+									<td ng-repeat="accion in acc | reverse"
+										style="text-align: center; border: 3px solid; padding: 3px; border-color: red"><strong>{{accion.derQA3}}</strong></td>
 								</tr>
 								<tr style="height: 20px;">
-									<td
-										style="text-align: center; border: 2px solid red; padding: 3px;">QA3sup</td>
-									<td
-										style="text-align: center; border: 2px solid red; padding: 3px;">QA3sup</td>
-									<td></td>
-									<td
-										style="text-align: center; border: 2px solid red; padding: 3px;">QA3inf</td>
-									<td
-										style="text-align: center; border: 2px solid red; padding: 3px;">QA3inf</td>
+									<td colspan="{{anchoColum}}"></td>
+									<td style="text-align: center;"><strong>{{res.posHero}}</strong></td>
 								</tr>
 								<tr style="height: 20px;">
-									<td></td>
-									<td></td>
-									<td style="text-align: center;"><strong>BU</strong></td>
-									<td></td>
-									<td></td>
-								</tr>
-								<tr style="height: 20px;">
-									<td></td>
-									<td></td>
-									<td style="text-align: center; border: 2px solid;">
+									<td colspan="{{anchoColum}}"></td>
+									<td style="text-align: center; border: 2px solid; opacity: 0.9; background-color: {{defAcc}}">
 										<h1>
-											<span style="color: #ff0000; margin: 10px;">AKo</span>
+											<span style="color: white; margin: 10px; opacity: 1">{{res.hand}}</span>
 										</h1>
 									</td>
-									<td></td>
-									<td></td>
 								</tr>
 								<tr style="height: 20px;">
-									<td></td>
-									<td></td>
+									<td colspan="{{anchoColum}}"></td>
 									<td
-										style="text-align: center; background-color: #000000; color: #ffffff;"><span><strong>20bb</strong></span></td>
-									<td></td>
-									<td></td>
+										style="text-align: center; background-color: #000000; color: #ffffff;"><span><strong>{{res.stackHero}}</strong></span></td>
 								</tr>
 							</tbody>
 						</table>
