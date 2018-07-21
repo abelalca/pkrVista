@@ -21,7 +21,9 @@ import javax.imageio.ImageIO;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.client.RestTemplate;
 
+import com.abp.pkr.pkrVista.dto.AccionInfoDto;
 import com.abp.pkr.pkrVista.dto.HandInfoDto;
 import com.abp.pkr.pkrVista.dto.MesaConfig;
 import com.abp.pkr.pkrVista.dto.MesaConfig.Zona;
@@ -253,6 +255,9 @@ public class CapturadorNgcImpl implements CapturadorNgc {
 					mesaActual = new Zona();
 					mesaActual.setX(mesa.getX());
 					mesaActual.setY(mesa.getY());
+					mesaActual.setAlto(mesa.getAlto());
+					mesaActual.setAncho(mesa.getAncho());
+					mesaActual.setLecturaValida(true);
 				}
 			}
 		}

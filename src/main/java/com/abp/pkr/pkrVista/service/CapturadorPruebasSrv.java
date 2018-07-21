@@ -99,57 +99,20 @@ public class CapturadorPruebasSrv {
 		return capturadorNgcImplPru.obtenerImg();
 	}
 
-	@GetMapping(value = "/pruebaVista")
-	public AccionInfoDto pruebaVista() throws Exception {
-		AccionInfoDto acc = new AccionInfoDto();
-		// Map<String, AccionVsPlayer> map = new HashMap<>();
-		// AccionVsPlayer apDEF = new AccionVsPlayer();
-		// AccionVsPlayer apREG = new AccionVsPlayer();
-		//
-		// acc.setHand("AA");
-		// acc.setInfVsEffStack(13.0);
-		// acc.setInfVsPlayer("SB");
-		// acc.setNumJug("3max");
-		// acc.setPosHero("BU");
-		// acc.setStackHero(20.0);
-		// acc.setSupVsEffStack(17.0);
-		// acc.setSupVsPlayer("BB");
-		//
-		// apDEF.setInfQA1("defInfQA1");
-		// apDEF.setInfQA2("defInfQA2");
-		// apDEF.setInfQA3("defInfQA3");
-		// apDEF.setSupQA1("defSupQA1");
-		// apDEF.setSupQA2("defSupQA2");
-		// apDEF.setSupQA3("defSupQA3");
-		//
-		// apREG.setInfQA1("regInfQA1");
-		// apREG.setInfQA3("regInfQA3");
-		// apREG.setSupQA2("defSupQA1");
-		// apREG.setSupQA3("regSupQA2");
-		//
-		// map.put("DEF", apDEF);
-		// map.put("REG", apREG);
-		//
-		// acc.setAccionVsPlayer(map);
+	@GetMapping(value = "/accionDesdeImagen")
+	public AccionInfoDto accionDesdeImagen() throws Exception {
+		long ini = System.currentTimeMillis();
+		
+		// obtener imagen desde carpeta
+		HandInfoDto handInfo = capturadorNgcImplPru.extraerInfoArchivoImg();
+		
+		// llamamos servicio de Logica preflop
+		AccionInfoDto acc= capturadorNgcImplPru.consumirLogicPre(handInfo);
 
-		String home = System.getProperty("user.home");
-		Gson gson = new Gson();
-
-		try {
-
-			FileReader fila = new FileReader(
-					new File(home + "\\Documents\\03-Alessandro\\01-poker\\appSoft\\pruebaVista.json"));
-
-			if (!fila.ready()) {
-				return null;
-			}
-
-			acc = gson.fromJson(fila, AccionInfoDto.class);
-			
-			
-		} catch (IOException e) {
-			throw new IOException("error al leer json file");
-		}
+		
+		long fin = System.currentTimeMillis();
+		handInfo.setTiempoRest((fin - ini));
+		log.debug("tiempo extraer Info desde iamgen: " + (fin - ini));
 
 		return acc;
 	}

@@ -20,13 +20,18 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.apache.tomcat.util.codec.binary.StringUtils;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.client.RestTemplate;
 
+import com.abp.pkr.pkrVista.dto.AccionInfoDto;
 import com.abp.pkr.pkrVista.dto.HandInfoDto;
 import com.abp.pkr.pkrVista.ngc.CapturadorOcrNgcImpl;
 import com.abp.pkr.pkrVista.utl.UtilView;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
+import ch.qos.logback.classic.Logger;
 
 /**
  * @author abpubuntu
@@ -34,6 +39,8 @@ import com.google.gson.GsonBuilder;
  */
 @Controller
 public class CapturadorNgcImplPru extends CapturadorOcrNgcImpl {
+	
+	private static final Logger log = (Logger) LoggerFactory.getLogger(CapturadorNgcImplPru.class);
 
 	public HandInfoDto extraerInfoArchivoImg() throws Exception {
 		HandInfoDto handInfoDto = new HandInfoDto();
@@ -42,6 +49,7 @@ public class CapturadorNgcImplPru extends CapturadorOcrNgcImpl {
 		String ruta = home + mesaConfig.getRutacaptura() + "\\" + mesaConfig.getNombrearchivo()
 				+ mesaConfig.getFormato();
 		BufferedImage img = ImageIO.read(new File(ruta));
+		log.debug("leyendo imagen desde directorio: " + ruta);
 
 		// procesamos zonas
 		handInfoDto = procesarZonas(img);
@@ -85,6 +93,22 @@ public class CapturadorNgcImplPru extends CapturadorOcrNgcImpl {
 		String encoded = sb.toString();
 
 		return encoded;
+	}
+	
+	
+	/**
+	 * Metodo que llama a otro rest de accione preflop
+	 * @param handInfoDto
+	 * @return
+	 */
+	public AccionInfoDto consumirLogicPre(HandInfoDto handInfoDto) {
+		final String url = "http://localhost:8450/proceso/procesarHand";
+
+		RestTemplate restTemplate = new RestTemplate();
+		AccionInfoDto accion = restTemplate.postForObject(url, handInfoDto, AccionInfoDto.class);
+		log.debug("Consumiendo servicio Rest de Logica Preflop: " + (accion != null? "Exitoso" : "Fallo"));
+
+		return accion;
 	}
 
 }

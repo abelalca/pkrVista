@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
@@ -84,7 +85,6 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 	 * @throws Exception
 	 */
 	protected HandInfoDto procesarZonas(BufferedImage screenImg) throws Exception {
-		log.debug("Procesando Imagen cuadrante");
 		HandInfoDto handInfoDto = new HandInfoDto();
 
 		String langTesse = mesaConfig.getTessLeng().toUpperCase();
@@ -109,6 +109,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		if (infoCartas.length() != 2) {
 			throw new Exception("Error al leer cartas");
 		}
+		log.debug("Leyendo cartas de Hero: " + infoCartas);
 
 		// *** obtener palos por analisis de colores de las cartas
 		List<Zona> configPalos = mesaConfig.getPalos();
@@ -126,6 +127,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		if (cartas.length() != 4) {
 			throw new Exception("No se pudo leer las cartas y/o palos");
 		}
+		log.debug("Leyendo cartas y palos de Hero: " + cartas);
 
 		// Leer numero de jugadores
 		Zona numJug = mesaConfig.getNumjug();
@@ -140,6 +142,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 			throw new Exception("No se pudo leer numero de jugadores");
 		}
 		handInfoDto.setNumjug(Integer.valueOf(infoNumJug[0]));
+		log.debug("Leyendo numero de jugadores: " + handInfoDto.getNumjug());
 
 		// Leer info stacks
 		List<Zona> configStacks = mesaConfig.getStack();
@@ -149,6 +152,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		if (ArrayUtils.isEmpty(infoStacks) || infoStacks.length < 2) {
 			throw new Exception("Stacks vacios o null");
 		}
+		log.debug("Leyendo stacks: " + Arrays.toString(infoStacks));
 
 		// Leer Posicion Hero
 		Zona configPosicionHero = mesaConfig.getPosicion();
@@ -172,25 +176,31 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		if (infoPosiHero == -1) {
 			throw new Exception("No se pudo leer posicion de Hero");
 		}
+		log.debug("Leyendo posicion de Hero: " + infoPosiHero);
 
 		// leer silla Hero en la mesa
 		String configSillaHero = mesaConfig.getSillahero();
 		Integer infoSillaHero = Integer.valueOf(configSillaHero);
 		handInfoDto.setSillaHero(infoSillaHero);
+		log.debug("Leyendo Silla de Hero: " + configSillaHero);
 
 		// posicion de los jugadores eliminados
 		List<Integer> posEliminados = new ArrayList<>();
-		
+
 		int i = 0;
+		boolean[] activos = new boolean[configStacks.size()];
 		for (Zona zona : configStacks) {
 			if (!zona.isLecturaValida()) {
 				posEliminados.add(i);
-				handInfoDto.getIsActivo()[i] = false;
+				activos[i] = false;
 			} else {
-				handInfoDto.getIsActivo()[i]= true;
+				activos[i] = true;
 			}
 			i++;
 		}
+		handInfoDto.setIsActivo(activos);
+		log.debug("Leyendo posicion Jugadores Activos: "
+				+ posEliminados.stream().map(Object::toString).collect(Collectors.joining(", ")));
 
 		// Leer posicion del button en el array de stacks
 		int posBu = -1;
@@ -218,6 +228,13 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 			break;
 		}
 		handInfoDto.setBtnPos(posBu);
+		log.debug("Leyendo posicion de Buton: " + posBu);
+
+		handInfoDto.setUsuario(mesaConfig.getUsuario());
+		log.debug("Leyendo usuario: " + handInfoDto.getUsuario());
+
+		handInfoDto.setEstrategia(mesaConfig.getEstrategia());
+		log.debug("Leyendo estrategia: " + handInfoDto.getEstrategia());
 
 		return handInfoDto;
 
@@ -236,7 +253,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 
 		// itero cada posicion de coordenadas
 		for (Zona zona : listaConfig) {
-			zona.setLecturaValida(false);
+			zona.setLecturaValida(true);
 			// recortamos subimagen
 			BufferedImage recortada = screenImg.getSubimage(zona.getX(), zona.getY(), zona.getAncho(), zona.getAlto());
 			// UtilView.guardarImagen(recortada,
@@ -289,11 +306,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 						try {
 							infoList.add(Double.valueOf(result));
 						} catch (Exception e) {
-							if (handInfoDto.getNumjug() == 2) {
-								// no se hace nada
-							} else {
-								throw e;
-							}
+							zona.setLecturaValida(false);
 						}
 						break;
 					// string
@@ -305,7 +318,6 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 						break;
 					}
 				}
-				zona.setLecturaValida(true);
 			} catch (Exception e) {
 				log.error(e.getMessage());
 				throw new Exception("Error al leer imagen por OCR: " + e.getMessage());
@@ -365,15 +377,19 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		if (mesaActual == null) {
 			return handInfoDto;
 		}
+		log.debug("Obteniendo coordenadas mesa actual (x,y): " + mesaActual.getX() + ", " + mesaActual.getY());
 
 		// capturo screen
 		Rectangle zona = new Rectangle(mesaActual.getX(), mesaActual.getY(), mesaActual.getAncho(),
 				mesaActual.getAlto());
 		BufferedImage screenImg = capturador.capturarScreenZona(zona);
+		log.debug("Capturando Imagen (ancho,alto): " + screenImg.getWidth() + ", " + screenImg.getHeight());
 
 		// procesamos zonas
 		try {
+			log.debug("PROCESANDO IMAGEN...");
 			handInfoDto = procesarZonas(screenImg);
+
 		} catch (Exception e) {
 			// Guardar Imagen e info del error
 			String ruta = home + mesaConfig.getRutacaptura() + "\\bugs";

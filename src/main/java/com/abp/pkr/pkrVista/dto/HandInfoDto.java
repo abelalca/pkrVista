@@ -15,8 +15,31 @@ public class HandInfoDto {
 	private boolean[] isActivo;
 	private Integer numjug;
 
+	private String usuario;
+	private String estrategia;
+
 	// tiempo de respuesta del servicio
 	private Long tiempoRest;
+
+	public String getUsuario() {
+		return usuario;
+	}
+
+	public void setUsuario(String usuario) {
+		this.usuario = usuario;
+	}
+
+	public String getEstrategia() {
+		return estrategia;
+	}
+
+	public void setEstrategia(String estrategia) {
+		this.estrategia = estrategia;
+	}
+
+	public void setIsActivo(boolean[] isActivo) {
+		this.isActivo = isActivo;
+	}
 
 	public int getSillaHero() {
 		return sillaHero;
@@ -128,6 +151,5 @@ public class HandInfoDto {
 	public boolean[] getIsActivo() {
 		return isActivo;
 	}
-
 
 }

@@ -41,6 +41,10 @@ public class MesaConfig {
 	private String rutacaptura;
 	private String nombrearchivo;
 
+	// usuario y estrategia
+	private String usuario;
+	private String estrategia;
+
 	// *******************************INNER CLASSES******************************
 	public static class Zona {
 		private int x;
@@ -215,6 +219,22 @@ public class MesaConfig {
 
 	public void setNumjug(Zona numjug) {
 		this.numjug = numjug;
+	}
+
+	public String getUsuario() {
+		return usuario;
+	}
+
+	public void setUsuario(String usuario) {
+		this.usuario = usuario;
+	}
+
+	public String getEstrategia() {
+		return estrategia;
+	}
+
+	public void setEstrategia(String estrategia) {
+		this.estrategia = estrategia;
 	}
 
 }

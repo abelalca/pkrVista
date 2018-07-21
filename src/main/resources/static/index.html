@@ -43,7 +43,8 @@
 			<ul class="nav nav-tabs">
 				<li class="active"><a data-toggle="tab" href="#tabReal">Real
 						Time</a></li>
-				<li><a data-toggle="tab" href="#tabTest">Test Screen</a></li>
+				<li><a data-toggle="tab" href="#tabTest">Test InfoMesa</a></li>
+				<li><a data-toggle="tab" href="#tabHand" ng-click=initabHand()>Hand ranges</a></li>
 			</ul>
 		</div>
 
@@ -51,11 +52,14 @@
 			<div class="tab-content">
 
 				<!-- 			primera tab -->
-				<div id="tabReal" class="tab-pane fade in active">
+				<div id="tabReal" class="tab-pane fade in active"
+					ng-init="ciclar = false">
 					<div class="container-fluid" style="margin-top: 10px;">
-						<button type="button" class="btn btn-success">Start</button>
-						<button type="button" class="btn btn-danger">Stop</button>
-						<button type="button" class="btn btn-light" ng-click=pruebaVista()>Test</button>
+						<button type="button" class="btn btn-success"
+							ng-click=iniciarAsesor()>Start</button>
+						<button type="button" class="btn btn-danger" ng-click=detener()>Stop</button>
+						<button type="button" class="btn btn-light"
+							ng-click=accionDesdeImagen()>Test Imagen</button>
 
 						<table
 							style="border-collapse: collapse; border: none; margin-top: 30px;">
@@ -69,10 +73,10 @@
 								</tr>
 								<tr style="height: 20px;">
 									<td ng-repeat="tipoPlayer in tipJug"
-										style="height: 20px; text-align: center; background-color: {{tipoPlayer.color}}; color: #ffffff;"><strong>{{tipoPlayer.tipo}}</strong></td>
+										style="height: 20px; text-align: center; background-color: {{tipoPlayer.color"><strong>{{tipoPlayer.tipo}}</strong></td>
 									<td style="height: 20px; text-align: center;"></td>
 									<td ng-repeat="tipoPlayer in tipJug | reverse"
-										style="height: 20px; text-align: center; background-color: {{tipoPlayer.color}}; color: #ffffff;"><strong>{{tipoPlayer.tipo}}</strong></td>
+										style="height: 20px; text-align: center; background-color: {{tipoPlayer.color"><strong>{{tipoPlayer.tipo}}</strong></td>
 								</tr>
 
 								<tr style="height: 20px;">
@@ -102,7 +106,8 @@
 								</tr>
 								<tr style="height: 20px;">
 									<td colspan="{{anchoColum}}"></td>
-									<td style="text-align: center; border: 2px solid; opacity: 0.9; background-color: {{defAcc}}">
+									<td
+										style="text-align: center; border: 2px solid; opacity: 0.9; background-color: {{defAcc">
 										<h1>
 											<span style="color: white; margin: 10px; opacity: 1">{{res.hand}}</span>
 										</h1>
@@ -141,10 +146,30 @@
 						</div>
 					</div>
 				</div>
-			</div>
-		</div>
 
-	</div>
+
+				<div id="tabHand" class="tab-pane fade">
+					<div class="container-fluid" style="margin-top: 10px;">
+						<button type="button" class="btn btn-danger" ng-click=limpiarRangos()>Clear All</button>
+						<table border="2" style="margin-top: 10px; padding: 1px;">
+							<tbody>
+								<tr ng-repeat="fila in allHands" style="height: 50px;">
+									<td ng-repeat="hand in fila" style="{{hand.estilo}}" ng-click="clickHand(hand)">{{hand.value}}</td>
+								</tr>
+							</tbody>
+						</table>						
+						<div>
+						<textarea rows="1" cols="88" style="margin-top: 10px;" ng-model="rango">
+							{{$scope.rango}}
+						</textarea>
+						</div>
+						
+					</div>
+
+				</div>
+			</div>
+
+		</div>
 	</div>
 	</div>
 
