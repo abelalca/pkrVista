@@ -82,7 +82,6 @@ public class CapturadorPruebasSrv {
 		HandInfoDto handInfo = capturadorNgcImplPru.extraerInfoArchivoRealTime();
 
 		long fin = System.currentTimeMillis();
-		handInfo.setTiempoRest((fin - ini));
 		log.debug("tiempo extraer Info mesa: " + (fin - ini));
 
 		return handInfo;
@@ -116,5 +115,25 @@ public class CapturadorPruebasSrv {
 
 		return acc;
 	}
+	
+	@GetMapping(value = "/accionDesdeJson")
+	public AccionInfoDto accionDesdeJson() throws Exception {
+		long ini = System.currentTimeMillis();
+		
+		// obtener imagen desde archivo json
+		HandInfoDto handInfo = capturadorNgcImplPru.extraerInfoArchivoJson();
+		
+		// llamamos servicio de Logica preflop
+		AccionInfoDto acc= capturadorNgcImplPru.consumirLogicPre(handInfo);
+
+		
+		long fin = System.currentTimeMillis();
+		handInfo.setTiempoRest((fin - ini));
+		log.debug("tiempo extraer Info desde iamgen: " + (fin - ini));
+
+		return acc;
+	}
+	
+	
 
 }

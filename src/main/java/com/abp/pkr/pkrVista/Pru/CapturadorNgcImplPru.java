@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.util.Date;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
@@ -30,6 +31,7 @@ import com.abp.pkr.pkrVista.ngc.CapturadorOcrNgcImpl;
 import com.abp.pkr.pkrVista.utl.UtilView;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.stream.JsonReader;
 
 import ch.qos.logback.classic.Logger;
 
@@ -39,7 +41,7 @@ import ch.qos.logback.classic.Logger;
  */
 @Controller
 public class CapturadorNgcImplPru extends CapturadorOcrNgcImpl {
-	
+
 	private static final Logger log = (Logger) LoggerFactory.getLogger(CapturadorNgcImplPru.class);
 
 	public HandInfoDto extraerInfoArchivoImg() throws Exception {
@@ -52,7 +54,11 @@ public class CapturadorNgcImplPru extends CapturadorOcrNgcImpl {
 		log.debug("leyendo imagen desde directorio: " + ruta);
 
 		// procesamos zonas
-		handInfoDto = procesarZonas(img);
+		long ini = System.currentTimeMillis();
+		handInfoDto = procesarZonasParalelo(img);
+		long fin = System.currentTimeMillis();
+		log.debug("tiempo OCR imagen: " + (fin-ini));
+		handInfoDto.setTiempoRest((fin-ini));
 
 		return handInfoDto;
 	}
@@ -68,9 +74,13 @@ public class CapturadorNgcImplPru extends CapturadorOcrNgcImpl {
 		// Guardar Imagen y info
 		String ruta = home + mesaConfig.getRutacaptura();
 		UtilView.guardarImagen(screenImg, ruta + "\\tmpImg.png");
-
+		
 		// procesamos zonas
-		handInfoDto = procesarZonas(screenImg);
+		long ini = System.currentTimeMillis();
+		handInfoDto = procesarZonasParalelo(screenImg);
+		long fin = System.currentTimeMillis();
+		handInfoDto.setTiempoRest(fin-ini);
+		
 
 		try (Writer writer = new FileWriter(ruta + "\\tmpJson")) {
 			Gson gson = new GsonBuilder().create();
@@ -79,7 +89,6 @@ public class CapturadorNgcImplPru extends CapturadorOcrNgcImpl {
 
 		return handInfoDto;
 	}
-
 
 	public String obtenerImg() throws IOException {
 		String ruta = home + mesaConfig.getRutacaptura();
@@ -94,10 +103,10 @@ public class CapturadorNgcImplPru extends CapturadorOcrNgcImpl {
 
 		return encoded;
 	}
-	
-	
+
 	/**
 	 * Metodo que llama a otro rest de accione preflop
+	 * 
 	 * @param handInfoDto
 	 * @return
 	 */
@@ -106,9 +115,23 @@ public class CapturadorNgcImplPru extends CapturadorOcrNgcImpl {
 
 		RestTemplate restTemplate = new RestTemplate();
 		AccionInfoDto accion = restTemplate.postForObject(url, handInfoDto, AccionInfoDto.class);
-		log.debug("Consumiendo servicio Rest de Logica Preflop: " + (accion != null? "Exitoso" : "Fallo"));
+		log.debug("Consumiendo servicio Rest de Logica Preflop: " + (accion != null ? "Exitoso" : "Fallo"));
 
 		return accion;
+	}
+
+	public HandInfoDto extraerInfoArchivoJson() throws Exception {
+
+		// leemos imagen desde directorio
+		String ruta = home + mesaConfig.getRutaJson() + "\\" + mesaConfig.getNombreJson() + ".json";
+		log.debug("leyendo Json prueba desde directorio: " + ruta);
+
+		// convertimos json to HandDtoInfo
+		Gson gson = new Gson();
+		JsonReader reader = new JsonReader(new FileReader(ruta));
+		HandInfoDto dataJson = gson.fromJson(reader, HandInfoDto.class);
+
+		return dataJson;
 	}
 
 }

@@ -3,7 +3,7 @@ var app = angular.module('app', []);
 app
 		.controller(
 				'mainCtl',
-				function($scope, $http, $timeout) {
+				function($scope, $http, $timeout, $sce) {
 
 					$scope.infoTiempoReal = function() {
 						$http.get('/pruebas/infoRealTime').then(
@@ -25,6 +25,9 @@ app
 					$scope.accionTiempoReal = function() {
 						$http.get('/captura/mesaInfo').then(function(response) {
 							pintarPantalla(response);
+							if ($scope.ciclar) {
+								$scope.accionTiempoReal();								
+							}
 						});
 					};
 
@@ -45,49 +48,138 @@ app
 
 					}
 
+					$scope.accionDesdeJson = function() {
+						$http.get('/pruebas/accionDesdeJson').then(
+								function(response) {
+									pintarPantalla(response);
+								});
+
+					}
+
 					$scope.iniciarAsesor = function() {
 						$scope.ciclar = true;
 						if ($scope.ciclar) {
-							$scope.reload();
+							$scope.accionTiempoReal();
 						}
 
+					}
+					
+					$scope.dispararShoot() =  function() {
+						$http.get('/captura/mesaInfo').then(function(response) {
+							pintarPantalla(response);
+							$scope.ciclar= false;
+						}
 					}
 
 					$scope.detener = function() {
 						$scope.ciclar = false;
 					}
 
-					$scope.reload = function() {
-						if ($scope.ciclar) {
-							$scope.accionTiempoReal();
-
-							// $timeout(function() {
-							// $scope.reload();
-							// }, 500)
-						}
-					};
-					
-					
-					
 					$scope.limpiarRangos = function() {
-						$scope.rango= "";
-						angular.copy($scope.origHands, $scope.allHands); 
+						$scope.rango = "";
+						angular.copy($scope.origHands, $scope.allHands);
 					}
 
-					$scope.clickHand = function(hand) {
-						if(!$scope.rango){
-							$scope.rango= "";
+					function colorTipJug(tipo) {
+						if (tipo == "DEF") {
+							return "orange";
 						}
-						
-						if (hand.activo) {
-							$scope.rango = $scope.rango
-									.replace(hand.value + ", ", "");
-							hand.activo = false;
-							hand.estilo = hand.estilo.replace(" background-color: #ff4d4d; ", "");
+						if (tipo == "FISH") {
+							return "blue";
+						}
+						if (tipo == "REG") {
+							return "red";
+						}
+						if (tipo == "GTO") {
+							return "purple";
+						}
+						return "black";
+					}
+
+					function defaultAccion(defAccion) {
+						if (defAccion == "R") {
+							return "green";
+						}
+						if (defAccion == "L") {
+							return "orange";
+						}
+						if (defAccion == "S") {
+							return "red";
+						}
+						if (defAccion == "F") {
+							return "gray";
+						}
+						return "black";
+					}
+
+					function pintarPantalla(response) {
+						if (response) {
+							$scope.res = response.data;
+							acciones = response.data.accionVsPlayer;
+							var tipJug = [];
+							var i = 0;
+							var attb = [];
+							for ( var index in acciones) {
+								tipJug.push({});
+								tipJug[i].tipo = index;
+								tipJug[i].color = colorTipJug(index);
+								attb[i] = acciones[index];
+								i++;
+							}
+							$scope.tipJug = tipJug;
+							$scope.anchoColum = tipJug.length;
+							$scope.acc = attb;
+							$scope.defAcc = defaultAccion($scope.res.defAccion);
+							$scope.res.hand = pintarHand($scope.res.hand);
+
+						}
+					}
+
+					function pintarHand(hand) {
+						var palo1 = hand.substring(1, 2);
+						if (palo1 == "s") {
+							$scope.palo1 = $sce.trustAsHtml('&spades;');
+						} else if (palo1 == "c") {
+							$scope.palo1 = $sce.trustAsHtml('&clubs;');
+						} else if (palo1 == "d") {
+							$scope.palo1 = $sce.trustAsHtml('&diams;');
+						} else if (palo1 == "h") {
+							$scope.palo1 = $sce.trustAsHtml('&hearts;');
+						}
+
+						var palo2 = hand.substring(3, 4);
+						if (palo2 == "s") {
+							$scope.palo2 = $sce.trustAsHtml('&spades;');
+						} else if (palo2 == "c") {
+							$scope.palo2 = $sce.trustAsHtml('&clubs;');
+						} else if (palo2 == "d") {
+							$scope.palo2 = $sce.trustAsHtml('&diams;');
+						} else if (palo2 == "h") {
+							$scope.palo2 = $sce.trustAsHtml('&hearts;');
+						}
+
+						$scope.carta1 = hand.substring(0, 1)
+						$scope.carta2 = hand.substring(2, 3)
+
+						return hand;
+					}
+
+					$scope.clickHand = function(manod) {
+						if (!$scope.rango) {
+							$scope.rango = "";
+						}
+
+						if (manod.activo) {
+							$scope.rango = $scope.rango.replace(manod.value
+									+ ", ", "");
+							manod.activo = false;
+							manod.estilo = manod.estilo.replace(
+									" background-color: #ff4d4d; ", "");
 						} else {
-							$scope.rango = $scope.rango + hand.value + ", ";
-							hand.activo = true;
-							hand.estilo = hand.estilo + " background-color: #ff4d4d; ";
+							$scope.rango = $scope.rango + manod.value + ", ";
+							manod.activo = true;
+							manod.estilo = manod.estilo
+									+ " background-color: #ff4d4d; ";
 						}
 					}
 
@@ -952,61 +1044,7 @@ app
 								} ]
 					}
 
-					
 					$scope.origHands = angular.copy($scope.allHands);
-					
-					function colorTipJug(tipo) {
-						if (tipo == "DEF") {
-							return "orange";
-						}
-						if (tipo == "FISH") {
-							return "blue";
-						}
-						if (tipo == "REG") {
-							return "red";
-						}
-						if (tipo == "GTO") {
-							return "purple";
-						}
-						return "black";
-					}
-
-					function defaultAccion(defAccion) {
-						if (defAccion == "R") {
-							return "green";
-						}
-						if (defAccion == "L") {
-							return "orange";
-						}
-						if (defAccion == "S") {
-							return "red";
-						}
-						if (defAccion == "F") {
-							return "gray";
-						}
-						return "black";
-					}
-
-					function pintarPantalla(response) {
-						if (response) {
-							$scope.res = response.data;
-							acciones = response.data.accionVsPlayer;
-							var tipJug = [];
-							var i = 0;
-							var attb = [];
-							for ( var index in acciones) {
-								tipJug.push({});
-								tipJug[i].tipo = index;
-								tipJug[i].color = colorTipJug(index);
-								attb[i] = acciones[index];
-								i++;
-							}
-							$scope.tipJug = tipJug;
-							$scope.anchoColum = tipJug.length;
-							$scope.acc = attb;
-							$scope.defAcc = defaultAccion($scope.res.defAccion);
-						}
-					}
 
 				});
 

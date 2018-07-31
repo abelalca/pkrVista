@@ -1,8 +1,13 @@
 package com.abp.pkr.pkrVista.dto;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class HandInfoDto {
 
@@ -12,6 +17,8 @@ public class HandInfoDto {
 	private String hand;
 	// los arrays deben tener length de los jugadores vivos en la mesa
 	private Double[] stacksBb;
+	@JsonIgnore
+	private Map<Integer, Double> tmpStacks;
 	private boolean[] isActivo;
 	private Integer numjug;
 
@@ -63,6 +70,25 @@ public class HandInfoDto {
 
 	public void setStacksBb(Double[] stacksBb) {
 		this.stacksBb = stacksBb;
+	}
+
+	public void addStack(Double stack, int posicion) {
+		if (this.tmpStacks == null) {
+			this.tmpStacks = new HashMap<>();
+		}
+		this.tmpStacks.put(posicion, stack);
+	}
+
+	public Double[] obtenerStack() {
+		int tam = this.tmpStacks.size();
+		Double[] st = null;
+		if (st == null) {
+			st = new Double[tam];
+		}
+		for (int i = 0; i < tam; i++) {
+			st[i] = this.tmpStacks.get(i);
+		}
+		return st;
 	}
 
 	public Integer getBtnPos() {

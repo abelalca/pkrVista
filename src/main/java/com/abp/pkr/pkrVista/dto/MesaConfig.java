@@ -39,7 +39,10 @@ public class MesaConfig {
 
 	// rutas de archivos Pruebas
 	private String rutacaptura;
+	private String rutaBugs;
 	private String nombrearchivo;
+	private String rutaJson;
+	private String nombreJson;
 
 	// usuario y estrategia
 	private String usuario;
@@ -52,6 +55,7 @@ public class MesaConfig {
 		private int ancho;
 		private int alto;
 		private boolean lecturaValida;
+		private String nombre;
 
 		public boolean isLecturaValida() {
 			return lecturaValida;
@@ -91,6 +95,14 @@ public class MesaConfig {
 
 		public void setAlto(int alto) {
 			this.alto = alto;
+		}
+
+		public String getNombre() {
+			return nombre;
+		}
+
+		public void setNombre(String nombre) {
+			this.nombre = nombre;
 		}
 
 	}
@@ -235,6 +247,30 @@ public class MesaConfig {
 
 	public void setEstrategia(String estrategia) {
 		this.estrategia = estrategia;
+	}
+
+	public String getNombreJson() {
+		return nombreJson;
+	}
+
+	public void setNombreJson(String nombreJson) {
+		this.nombreJson = nombreJson;
+	}
+
+	public String getRutaJson() {
+		return rutaJson;
+	}
+
+	public void setRutaJson(String rutaJson) {
+		this.rutaJson = rutaJson;
+	}
+
+	public String getRutaBugs() {
+		return rutaBugs;
+	}
+
+	public void setRutaBugs(String rutaBugs) {
+		this.rutaBugs = rutaBugs;
 	}
 
 }

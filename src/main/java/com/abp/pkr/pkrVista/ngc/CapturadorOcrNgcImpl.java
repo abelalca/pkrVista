@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -241,6 +242,230 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 	}
 
 	/**
+	 * METODO DE PRUEBA PARA VER SI SE PUEDE PROCESAR OCR EN PARALELO CON EL FIN DE
+	 * MEJORAR PERFORMANCE
+	 * 
+	 * @param screenImg
+	 * @return
+	 * @throws Exception
+	 */
+	protected HandInfoDto procesarZonasParalelo(BufferedImage screenImg) throws Exception {
+		HandInfoDto handInfoDto = new HandInfoDto();
+
+		String langTesse = mesaConfig.getTessLeng().toUpperCase();
+		int factorResize = Integer.valueOf(mesaConfig.getFactorResize());
+		Object[] objArr = null;
+		Object object = null;
+
+		// agregamos todas las zonas a una lista a iterar en paralelo
+		List<Zona> listImages = new ArrayList<>();
+
+		Zona numJug = mesaConfig.getNumjug();
+		numJug.setNombre("numJug");
+		listImages.add(numJug);
+
+		Zona configCartas = mesaConfig.getCartas();
+		configCartas.setNombre("cartas");
+		listImages.add(configCartas);
+
+		List<Zona> configStacks = mesaConfig.getStack();
+		int i = 0;
+		for (Zona zona2 : configStacks) {
+			zona2.setNombre("stacks" + i);
+			i++;
+		}
+		listImages.addAll(configStacks);
+
+		Zona configPosicionHero = mesaConfig.getPosicion();
+		configPosicionHero.setNombre("posi");
+		listImages.add(configPosicionHero);
+
+		Zona[] zonaArray = new Zona[listImages.size()];
+		zonaArray = listImages.toArray(zonaArray);
+
+		List<Object> objArry = new ArrayList<>();
+		Arrays.stream(zonaArray).parallel().forEach((zona) -> {
+			Tesseract tesseract = new Tesseract();
+			try {
+				List<Zona> zonaList = new ArrayList<>();
+				zonaList.add(zona);
+				int factorSize = Integer.valueOf(mesaConfig.getFactorResize());
+				String lengTesse = null;
+				if (zona.getNombre().equals("cartas")) {
+					lengTesse = "CARTAS";
+					factorSize = 2;
+				}
+				if (zona.getNombre().equals("numJug")) {
+					lengTesse = "NUM";
+				}
+				if (zona.getNombre().contains("stacks")) {
+					lengTesse = "NUM";
+				}
+				if (zona.getNombre().equals("posi")) {
+					lengTesse = "POS";
+				}
+				Object[] obj = leerInfoPorOCR(screenImg, zonaList, TIPO_DATO.STR, lengTesse, factorSize, handInfoDto);
+				boolean lectura = normalizarDatos(obj, zona, handInfoDto);
+				objArry.add(lectura);
+			} catch (Exception e) {
+				log.error(e.getMessage());
+			}
+		});
+
+		// stacks
+		handInfoDto.setStacksBb(handInfoDto.obtenerStack());
+
+		// *** obtener palos por analisis de colores de las cartas
+		List<Zona> configPalos = mesaConfig.getPalos();
+		objArr = capturador.leerInfoPorPixel(screenImg, configPalos, buffPalos, "", TIPO_DATO.STR);
+		String[] infoPalos = Arrays.copyOf(objArr, objArr.length, String[].class);
+		String infoCartas = handInfoDto.getHand();
+		String cartas = "";
+		if (StringUtils.isNotBlank(infoCartas) && infoPalos.length > 1) {
+			String first = infoCartas.substring(0, 1);
+			String second = infoCartas.substring(1, 2);
+			cartas = first + infoPalos[0] + second + infoPalos[1];
+		}
+		handInfoDto.setHand(cartas);
+
+		if (cartas.length() != 4) {
+			throw new Exception("No se pudo reconocer cartas");
+		}
+		log.debug("Leyendo cartas y palos de Hero: " + cartas);
+
+		// leer silla Hero en la mesa
+		String configSillaHero = mesaConfig.getSillahero();
+		Integer infoSillaHero = Integer.valueOf(configSillaHero);
+		handInfoDto.setSillaHero(infoSillaHero);
+		log.debug("Leyendo Silla de Hero: " + configSillaHero);
+
+		handInfoDto.setUsuario(mesaConfig.getUsuario());
+		log.debug("Leyendo usuario: " + handInfoDto.getUsuario());
+
+		handInfoDto.setEstrategia(mesaConfig.getEstrategia());
+		log.debug("Leyendo estrategia: " + handInfoDto.getEstrategia());
+
+		return handInfoDto;
+
+	}
+
+	private boolean normalizarDatos(Object[] objArr, Zona zona, HandInfoDto handInfoDto) throws Exception {
+		Object object = null;
+		// Leer Cartas Hero
+		if (zona.getNombre().equals("cartas")) {
+			String infoCartas = "";
+			if (ArrayUtils.isNotEmpty(objArr)) {
+				object = objArr[0];
+				infoCartas = object.toString();
+				infoCartas = infoCartas.replace("10", "T");
+			} else {
+				throw new Exception("Sin datos para leer");
+			}
+			if (infoCartas.length() != 2) {
+				throw new Exception("No se pudo reconocer cartas");
+			}
+			handInfoDto.setHand(infoCartas);
+			log.debug("Leyendo cartas de Hero: " + infoCartas);
+		}
+
+		if (zona.getNombre().equals("numJug")) {
+			// Leer numero de jugadores
+			if (ArrayUtils.isNotEmpty(objArr)) {
+				object = objArr[0];
+			} else {
+				throw new Exception("Sin datos para leer");
+			}
+			handInfoDto.setNumjug(Integer.valueOf(Integer.valueOf(object.toString())));
+			log.debug("Leyendo numero de jugadores: " + handInfoDto.getNumjug());
+		}
+
+		if (zona.getNombre().contains("stacks")) {
+			// Leer info stacks
+			if (objArr == null) {
+				throw new Exception("Sin datos para leer");
+			}
+			int posic = Integer.valueOf(zona.getNombre().substring(6, 7));
+			String valor = objArr[0].toString().replace(",", ".");
+			handInfoDto.addStack(Double.valueOf(valor), posic);
+			log.debug("Leyendo " + zona.getNombre() + ": " + valor);
+		}
+
+		if (zona.getNombre().equals("posi")) {
+			// Leer Posicion Hero
+			if (ArrayUtils.isNotEmpty(objArr)) {
+				object = objArr[0];
+			}else {
+				throw new Exception("Sin datos para leer");
+			}
+			String infoPHero = object.toString();
+			Integer infoPosiHero = -1;
+			if (infoPHero.trim().contains("BB")) {
+				infoPosiHero = 0;
+			} else if (infoPHero.trim().contains("SB")) {
+				infoPosiHero = 1;
+			} else if (infoPHero.trim().contains("BU")) {
+				infoPosiHero = 2;
+			}
+
+			handInfoDto.setPosHero(infoPosiHero);
+			if (infoPosiHero == -1) {
+				throw new Exception("No se pudo leer posicion de Hero");
+			}
+			log.debug("Leyendo posicion de Hero: " + infoPosiHero);
+
+			// posicion de los jugadores eliminados
+			List<Integer> posEliminados = new ArrayList<>();
+
+			int i = 0;
+			List<Zona> configStacks = mesaConfig.getStack();
+			boolean[] activos = new boolean[configStacks.size()];
+			for (Zona zon : configStacks) {
+				if (!zon.isLecturaValida()) {
+					posEliminados.add(i);
+					activos[i] = false;
+				} else {
+					activos[i] = true;
+				}
+				i++;
+			}
+			handInfoDto.setIsActivo(activos);
+			log.debug("Leyendo posicion Jugadores Activos: "
+					+ posEliminados.stream().map(Object::toString).collect(Collectors.joining(", ")));
+
+			// Leer posicion del button en el array de stacks
+			int posBu = -1;
+			switch (handInfoDto.getNumjug()) {
+			case 3:
+				if (infoPosiHero == 0) {
+					posBu = 2;
+				} else if (infoPosiHero == 1) {
+					posBu = 0;
+				} else if (infoPosiHero == 2) {
+					posBu = 1;
+				}
+				break;
+			case 2:
+				if (posEliminados.get(0) == 0 && infoPosiHero == 1) {
+					posBu = 0;
+				} else if (posEliminados.get(0) == 0 && infoPosiHero == 0) {
+					posBu = 1;
+				} else if (posEliminados.get(0) == 2 && infoPosiHero == 1) {
+					posBu = 1;
+				} else if (posEliminados.get(0) == 2 && infoPosiHero == 0) {
+					posBu = 0;
+				}
+			default:
+				break;
+			}
+			handInfoDto.setBtnPos(posBu);
+			log.debug("Leyendo posicion de Buton: " + posBu);
+		}
+
+		return true;
+
+	}
+
+	/**
 	 * @author Alesso
 	 * @param handInfoDto
 	 * @date 29018-05-27
@@ -336,7 +561,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 	 * @throws Exception
 	 */
 	public String guardarInfo() throws Exception {
-		String ruta = home + mesaConfig.getRutacaptura();
+		String ruta = home + mesaConfig.getRutaBugs();
 		Long date = new Date().getTime();
 
 		File tmpImg = new File(ruta + "\\tmpImg.png");
@@ -388,15 +613,17 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		// procesamos zonas
 		try {
 			log.debug("PROCESANDO IMAGEN...");
-			handInfoDto = procesarZonas(screenImg);
+			handInfoDto = procesarZonasParalelo(screenImg);
 
 		} catch (Exception e) {
 			// Guardar Imagen e info del error
-			String ruta = home + mesaConfig.getRutacaptura() + "\\bugs";
-			Long date = new Date().getTime();
-			UtilView.guardarImagen(screenImg, ruta + "\\" + date.toString() + ".png");
-			FileUtils.writeStringToFile(new File(ruta + "\\" + date.toString()), e.getMessage());
-			handInfoDto = null;
+			if(!e.getMessage().equals("Sin datos para leer")) {
+				String ruta = home + mesaConfig.getRutacaptura() + "\\bugs";
+				Long date = new Date().getTime();
+				UtilView.guardarImagen(screenImg, ruta + "\\" + date.toString() + ".png");
+				FileUtils.writeStringToFile(new File(ruta + "\\" + date.toString()), e.getMessage());
+				handInfoDto = null;				
+			}
 		}
 
 		return handInfoDto;

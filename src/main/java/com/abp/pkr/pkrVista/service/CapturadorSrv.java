@@ -5,7 +5,6 @@ package com.abp.pkr.pkrVista.service;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,7 +12,6 @@ import org.springframework.web.client.RestTemplate;
 
 import com.abp.pkr.pkrVista.dto.AccionInfoDto;
 import com.abp.pkr.pkrVista.dto.HandInfoDto;
-import com.abp.pkr.pkrVista.ngc.CapturadorNgcImpl;
 import com.abp.pkr.pkrVista.ngc.CapturadorOcrNgcImpl;
 
 import ch.qos.logback.classic.Logger;
