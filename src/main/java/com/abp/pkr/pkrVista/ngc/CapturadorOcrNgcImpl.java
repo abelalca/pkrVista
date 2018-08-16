@@ -6,20 +6,16 @@ package com.abp.pkr.pkrVista.ngc;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
-import javax.sql.rowset.spi.TransactionalWriter;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
@@ -30,14 +26,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.abp.pkr.pkrVista.dto.HandInfoDto;
 import com.abp.pkr.pkrVista.dto.MesaConfig;
 import com.abp.pkr.pkrVista.dto.MesaConfig.Zona;
-import com.abp.pkr.pkrVista.ngc.CapturadorNgc.TIPO_DATO;
 import com.abp.pkr.pkrVista.utl.UtilView;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import ch.qos.logback.classic.Logger;
 import net.coobird.thumbnailator.Thumbnails;
-import net.sourceforge.tess4j.ITessAPI.TessBaseAPI;
 import net.sourceforge.tess4j.Tesseract;
 
 /**
@@ -49,6 +41,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 	private static final Logger log = (Logger) LoggerFactory.getLogger(CapturadorOcrNgcImpl.class);
 
 	protected static Map<String, BufferedImage> buffPalos = null;
+	protected static Map<String, BufferedImage> buffColaImagenes = null;
 
 	@Autowired
 	protected CapturadorNgcImpl capturador;
@@ -78,6 +71,10 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		buffPalos = new HashMap<>();
 		String rutaPalos = mesaConfig.getRutaPalos();
 		capturador.filesToBuffer(buffPalos, rutaPalos);
+
+		// inicilizo buffer de cola de imagenes para guardar errores
+		buffColaImagenes = new HashMap<>();
+
 	}
 
 	/**
@@ -286,6 +283,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		List<Object> objArry = new ArrayList<>();
 		Arrays.stream(zonaArray).parallel().forEach((zona) -> {
 			Tesseract tesseract = new Tesseract();
+			TIPO_DATO tipoDat = null;
 			try {
 				List<Zona> zonaList = new ArrayList<>();
 				zonaList.add(zona);
@@ -294,17 +292,21 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 				if (zona.getNombre().equals("cartas")) {
 					lengTesse = "CARTAS";
 					factorSize = 2;
+					tipoDat = TIPO_DATO.STR;
 				}
 				if (zona.getNombre().equals("numJug")) {
 					lengTesse = "NUM";
+					tipoDat = TIPO_DATO.INT;
 				}
 				if (zona.getNombre().contains("stacks")) {
 					lengTesse = "NUM";
+					tipoDat = TIPO_DATO.DEC;
 				}
 				if (zona.getNombre().equals("posi")) {
 					lengTesse = "POS";
+					tipoDat = TIPO_DATO.STR;
 				}
-				Object[] obj = leerInfoPorOCR(screenImg, zonaList, TIPO_DATO.STR, lengTesse, factorSize, handInfoDto);
+				Object[] obj = leerInfoPorOCR(screenImg, zonaList, tipoDat, lengTesse, factorSize, handInfoDto);
 				boolean lectura = normalizarDatos(obj, zona, handInfoDto);
 				objArry.add(lectura);
 			} catch (Exception e) {
@@ -332,6 +334,40 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 			throw new Exception("No se pudo reconocer cartas");
 		}
 		log.debug("Leyendo cartas y palos de Hero: " + cartas);
+
+		// posicion de los jugadores eliminados
+		handInfoDto.setIsActivo(handInfoDto.getIsActivo());
+		log.debug("Leyendo posicion Jugadores Activos: " + Arrays.toString(handInfoDto.getIsActivo()));
+
+		// Leer posicion del button en el array de stacks
+		int posBu = -1;
+		Integer infoPosiHero = handInfoDto.getPosHero();
+		boolean[] posActivo = handInfoDto.getIsActivo();
+		switch (handInfoDto.getNumjug()) {
+		case 3:
+			if (infoPosiHero == 0) {
+				posBu = 2;
+			} else if (infoPosiHero == 1) {
+				posBu = 0;
+			} else if (infoPosiHero == 2) {
+				posBu = 1;
+			}
+			break;
+		case 2:
+			if (posActivo[2] && infoPosiHero == 1) {
+				posBu = 0;
+			} else if (posActivo[2] && infoPosiHero == 0) {
+				posBu = 1;
+			} else if (posActivo[0] && infoPosiHero == 1) {
+				posBu = 1;
+			} else if (posActivo[0] && infoPosiHero == 0) {
+				posBu = 0;
+			}
+		default:
+			break;
+		}
+		handInfoDto.setBtnPos(posBu);
+		log.debug("Leyendo posicion de Buton: " + posBu);
 
 		// leer silla Hero en la mesa
 		String configSillaHero = mesaConfig.getSillahero();
@@ -394,7 +430,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 			// Leer Posicion Hero
 			if (ArrayUtils.isNotEmpty(objArr)) {
 				object = objArr[0];
-			}else {
+			} else {
 				throw new Exception("Sin datos para leer");
 			}
 			String infoPHero = object.toString();
@@ -413,52 +449,6 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 			}
 			log.debug("Leyendo posicion de Hero: " + infoPosiHero);
 
-			// posicion de los jugadores eliminados
-			List<Integer> posEliminados = new ArrayList<>();
-
-			int i = 0;
-			List<Zona> configStacks = mesaConfig.getStack();
-			boolean[] activos = new boolean[configStacks.size()];
-			for (Zona zon : configStacks) {
-				if (!zon.isLecturaValida()) {
-					posEliminados.add(i);
-					activos[i] = false;
-				} else {
-					activos[i] = true;
-				}
-				i++;
-			}
-			handInfoDto.setIsActivo(activos);
-			log.debug("Leyendo posicion Jugadores Activos: "
-					+ posEliminados.stream().map(Object::toString).collect(Collectors.joining(", ")));
-
-			// Leer posicion del button en el array de stacks
-			int posBu = -1;
-			switch (handInfoDto.getNumjug()) {
-			case 3:
-				if (infoPosiHero == 0) {
-					posBu = 2;
-				} else if (infoPosiHero == 1) {
-					posBu = 0;
-				} else if (infoPosiHero == 2) {
-					posBu = 1;
-				}
-				break;
-			case 2:
-				if (posEliminados.get(0) == 0 && infoPosiHero == 1) {
-					posBu = 0;
-				} else if (posEliminados.get(0) == 0 && infoPosiHero == 0) {
-					posBu = 1;
-				} else if (posEliminados.get(0) == 2 && infoPosiHero == 1) {
-					posBu = 1;
-				} else if (posEliminados.get(0) == 2 && infoPosiHero == 0) {
-					posBu = 0;
-				}
-			default:
-				break;
-			}
-			handInfoDto.setBtnPos(posBu);
-			log.debug("Leyendo posicion de Buton: " + posBu);
 		}
 
 		return true;
@@ -591,12 +581,8 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 	 * @throws Exception
 	 */
 	@Override
-	public HandInfoDto extraerMesaInfo() throws Exception {
+	public HandInfoDto extraerMesaInfo(Zona mesaActual) throws Exception {
 		HandInfoDto handInfoDto = null;
-
-		// mesa que estoy parado, debemos obtener las coord del mouse para
-		// saber en que mesa estamos
-		Zona mesaActual = capturador.mesaMouse();
 
 		// Si el mouse no esta dentro de ninguna mesa
 		if (mesaActual == null) {
@@ -610,23 +596,51 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		BufferedImage screenImg = capturador.capturarScreenZona(zona);
 		log.debug("Capturando Imagen (ancho,alto): " + screenImg.getWidth() + ", " + screenImg.getHeight());
 
+		almacenarColaImagenes(screenImg, mesaActual);
+
 		// procesamos zonas
 		try {
 			log.debug("PROCESANDO IMAGEN...");
 			handInfoDto = procesarZonasParalelo(screenImg);
-
 		} catch (Exception e) {
-			// Guardar Imagen e info del error
-			if(!e.getMessage().equals("Sin datos para leer")) {
-				String ruta = home + mesaConfig.getRutacaptura() + "\\bugs";
-				Long date = new Date().getTime();
-				UtilView.guardarImagen(screenImg, ruta + "\\" + date.toString() + ".png");
-				FileUtils.writeStringToFile(new File(ruta + "\\" + date.toString()), e.getMessage());
-				handInfoDto = null;				
-			}
+			log.error(e.getMessage());
+
+			handInfoDto = null;
 		}
 
 		return handInfoDto;
+	}
+
+	private void almacenarColaImagenes(BufferedImage screenImg, Zona mesaActual) {
+
+		if (buffColaImagenes.containsKey(mesaActual.getNombre())) {
+			buffColaImagenes.remove(mesaActual.getNombre());
+		}
+		buffColaImagenes.put(mesaActual.getNombre(), screenImg);
+
+	}
+
+	public void almacenarImagenCuadrante(String cuadrante) {
+		String ruta = home + mesaConfig.getRutacaptura() + "\\bugs";
+		Long date = new Date().getTime();
+		try {
+			BufferedImage img = buffColaImagenes.get(cuadrante);
+			UtilView.guardarImagen(img, ruta + "\\" + cuadrante + "_" + date.toString() + ".png");
+		} catch (Exception e) {
+			log.error(e.getMessage());
+		}
+	}
+
+	public List<String> obtenerNombresCuadrantes() {
+		List<Zona> mesas = mesaConfig.getMesa();
+		List<String> cuadrantes = new ArrayList<>();
+		for (Zona zona : mesas) {
+			cuadrantes.add(zona.getNombre());
+		}
+
+		java.util.Collections.sort(cuadrantes);
+
+		return cuadrantes;
 	}
 
 }

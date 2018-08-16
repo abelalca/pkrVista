@@ -40,6 +40,9 @@ public class CapturadorNgcImpl implements CapturadorNgc {
 
 	@Autowired
 	protected MesaConfig mesaConfig;
+	
+	@Autowired
+	protected CapturadorNgcImpl capturador;
 
 	private static final Logger log = (Logger) LoggerFactory.getLogger(CapturadorNgcImpl.class);
 
@@ -244,7 +247,7 @@ public class CapturadorNgcImpl implements CapturadorNgc {
 	 * @date May 27, 2018
 	 * @return
 	 */
-	protected Zona mesaMouse() {
+	public Zona mesaMouse() {
 		Point p = MouseInfo.getPointerInfo().getLocation();
 		List<Zona> mesas = mesaConfig.getMesa();
 		Zona mesaActual = null;
@@ -258,6 +261,7 @@ public class CapturadorNgcImpl implements CapturadorNgc {
 					mesaActual.setAlto(mesa.getAlto());
 					mesaActual.setAncho(mesa.getAncho());
 					mesaActual.setLecturaValida(true);
+					mesaActual.setNombre(mesa.getNombre());
 				}
 			}
 		}
@@ -295,8 +299,9 @@ public class CapturadorNgcImpl implements CapturadorNgc {
 		return screenImage;
 	}
 
+
 	@Override
-	public HandInfoDto extraerMesaInfo() throws Exception {
+	public HandInfoDto extraerMesaInfo(Zona mesaActual) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}

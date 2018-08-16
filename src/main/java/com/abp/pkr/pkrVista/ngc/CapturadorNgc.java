@@ -4,6 +4,7 @@
 package com.abp.pkr.pkrVista.ngc;
 
 import com.abp.pkr.pkrVista.dto.HandInfoDto;
+import com.abp.pkr.pkrVista.dto.MesaConfig.Zona;
 
 /**
  * @author abpubuntu
@@ -30,6 +31,6 @@ public interface CapturadorNgc {
 		MIX // num and string
 	}	
 
-	public HandInfoDto extraerMesaInfo() throws Exception;
+	public HandInfoDto extraerMesaInfo(Zona mesaActual) throws Exception;
 
 }

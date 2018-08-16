@@ -72,7 +72,7 @@ public class CapturadorNgcImplPru extends CapturadorOcrNgcImpl {
 		BufferedImage screenImg = capturador.capturarScreenZona(zona);
 
 		// Guardar Imagen y info
-		String ruta = home + mesaConfig.getRutacaptura();
+		String ruta = home + mesaConfig.getRutaBugs();
 		UtilView.guardarImagen(screenImg, ruta + "\\tmpImg.png");
 		
 		// procesamos zonas
@@ -91,7 +91,7 @@ public class CapturadorNgcImplPru extends CapturadorOcrNgcImpl {
 	}
 
 	public String obtenerImg() throws IOException {
-		String ruta = home + mesaConfig.getRutacaptura();
+		String ruta = home + mesaConfig.getRutaBugs();
 		File tmpImg = new File(ruta + "\\tmpImg.png");
 		InputStream in = FileUtils.openInputStream(tmpImg);
 		byte[] bArry = IOUtils.toByteArray(in);

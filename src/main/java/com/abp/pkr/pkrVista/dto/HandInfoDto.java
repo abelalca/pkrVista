@@ -2,12 +2,11 @@ package com.abp.pkr.pkrVista.dto;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.codehaus.jackson.annotate.JsonIgnore;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class HandInfoDto {
 
@@ -86,7 +85,14 @@ public class HandInfoDto {
 			st = new Double[tam];
 		}
 		for (int i = 0; i < tam; i++) {
-			st[i] = this.tmpStacks.get(i);
+			if (this.tmpStacks.get(0) == null) {
+				tam=3;
+				if(i>0) {
+					st[i-1] = this.tmpStacks.get(i);	
+				}
+			}else {
+				st[i] = this.tmpStacks.get(i);				
+			}
 		}
 		return st;
 	}
@@ -175,7 +181,16 @@ public class HandInfoDto {
 	}
 
 	public boolean[] getIsActivo() {
-		return isActivo;
+		boolean[] act = new boolean[3];
+		for (int i=0; i < 3; i++) {
+			if(this.tmpStacks.get(i) != null) {
+				act[i] = true;
+			} else {
+				act[i] = false;				
+			}
+		}		
+		
+		return act;
 	}
 
 }

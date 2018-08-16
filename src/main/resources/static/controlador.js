@@ -3,7 +3,19 @@ var app = angular.module('app', []);
 app
 		.controller(
 				'mainCtl',
-				function($scope, $http, $timeout, $sce) {
+				function($scope, $http, $timeout, $sce) {			
+					
+					obtenerNombresCuadrantes();
+					
+					
+					function obtenerNombresCuadrantes() {
+						$http.get('/captura/obtenerNombresCuadrantes').then(
+								function(response) {
+									if (response) {
+										$scope.cuadrantes = response.data;
+									}
+								});
+					}
 
 					$scope.infoTiempoReal = function() {
 						$http.get('/pruebas/infoRealTime').then(
@@ -23,10 +35,23 @@ app
 					};
 
 					$scope.accionTiempoReal = function() {
+						
 						$http.get('/captura/mesaInfo').then(function(response) {
-							pintarPantalla(response);
+							if (response.data.hand) {
+								pintarPantalla(response);
+							}
 							if ($scope.ciclar) {
-								$scope.accionTiempoReal();								
+								$scope.accionTiempoReal();
+							}
+						}, function(data) {
+							$scope.accionTiempoReal();
+						});
+					};
+
+					$scope.almacenarImagenCuadrante = function(cuadrante) {
+						$http.get('/captura/almacenarImagenCuadrante', {
+							params : {
+								cuadrante : cuadrante
 							}
 						});
 					};
@@ -63,12 +88,12 @@ app
 						}
 
 					}
-					
-					$scope.dispararShoot() =  function() {
+
+					$scope.dispararShoot = function() {
 						$http.get('/captura/mesaInfo').then(function(response) {
 							pintarPantalla(response);
-							$scope.ciclar= false;
-						}
+							$scope.ciclar = false;
+						});
 					}
 
 					$scope.detener = function() {
@@ -97,7 +122,8 @@ app
 					}
 
 					function defaultAccion(defAccion) {
-						if (defAccion == "R") {
+						if (defAccion == "R" || defAccion == "O"
+								|| defAccion == "S" || defAccion == "P") {
 							return "green";
 						}
 						if (defAccion == "L") {
@@ -131,6 +157,7 @@ app
 							$scope.acc = attb;
 							$scope.defAcc = defaultAccion($scope.res.defAccion);
 							$scope.res.hand = pintarHand($scope.res.hand);
+							$scope.tiempo = $scope.res.tiempo;
 
 						}
 					}
@@ -1045,6 +1072,7 @@ app
 					}
 
 					$scope.origHands = angular.copy($scope.allHands);
+
 
 				});
 

@@ -14,6 +14,7 @@ public class AccionInfoDto {
 	private String derVsPlayer;
 	private Double izqVsEffStack;
 	private Double derVsEffStack;
+	private Long tiempo;
 
 	private Map<String, AccionVsPlayer> accionVsPlayer;
 
@@ -95,6 +96,14 @@ public class AccionInfoDto {
 
 	public void setDefAccion(String defAccion) {
 		this.defAccion = defAccion;
+	}
+
+	public Long getTiempo() {
+		return tiempo;
+	}
+
+	public void setTiempo(Long tiempo) {
+		this.tiempo = tiempo;
 	}
 
 }

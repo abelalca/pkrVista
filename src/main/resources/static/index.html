@@ -56,15 +56,31 @@
 				<div id="tabReal" class="tab-pane fade in active"
 					ng-init="ciclar = false">
 					<div class="container-fluid" style="margin-top: 10px;">
-						<button type="button" class="btn btn-success"
-							ng-click=iniciarAsesor()>Start</button>
-						<button type="button" class="btn btn-danger" ng-click=detener()>Stop</button>
-						<button type="button" class="btn btn-default" ng-click=dispararShoot()>Shoot</button>
-						<button type="button" class="btn btn-light"
-							ng-click=accionDesdeImagen()>Test Imagen File</button>
-						<button type="button" class="btn btn-light"
-							ng-click=accionDesdeJson()>Test Json File</button>
+						<!-- 					 fila de botones -->
+						<div class="row">
+							<button type="button" class="btn btn-success btn-lg"
+								ng-click=iniciarAsesor()>Start</button>
+							<button type="button" class="btn btn-danger btn-lg"
+								ng-click=detener()>Stop</button>
+<!-- 							<button type="button" class="btn btn-default" -->
+<!-- 								title="se debe cambiar configuracion de mesaconf.mesa" -->
+<!-- 								ng-click=dispararShoot()>Shoot</button> -->
+							<button type="button" class="btn btn-light"
+								ng-click=accionDesdeImagen()>Test Imagen File</button>
+							<button type="button" class="btn btn-light"
+								ng-click=accionDesdeJson()>Test Json File</button>
+						</div>
 
+						<!-- 						fila de cuadrantes -->
+						<div class="row" style="margin-top: 17px;">
+							<span ng-repeat="cuadrante in cuadrantes">
+								<button type="button" class="btn btn-lg"
+									ng-click="almacenarImagenCuadrante(cuadrante)"
+									style="margin-right: 3px;">{{cuadrante}}</button>
+							</span>
+						</div>
+
+						<!-- 						fila de resultados -->
 						<table
 							style="border-collapse: collapse; border: none; margin-top: 30px;">
 							<tbody>
@@ -111,21 +127,27 @@
 								<tr style="height: 20px;">
 									<td colspan="{{anchoColum}}"></td>
 									<td
+										style="text-align: center; background-color: #000000; color: #ffffff;"><span><strong>{{res.stackHero}}</strong></span></td>
+								</tr>
+								<tr style="height: 20px;">
+									<td colspan="{{anchoColum}}"></td>
+									<td
 										style="text-align: center; border: 2px solid; opacity: 0.9; background-color: {{defAcc}}">
 										<h1>
 											<span style="color: white; margin: 10px; opacity: 1">
-												{{carta1}}<span ng-bind-html="palo1"></span>{{carta2}}<span ng-bind-html="palo2">
-											</span>
+												{{carta1}}<span ng-bind-html="palo1"></span>{{carta2}}<span
+												ng-bind-html="palo2"> </span>
 										</h1>
 									</td>
 								</tr>
 								<tr style="height: 20px;">
 									<td colspan="{{anchoColum}}"></td>
 									<td
-										style="text-align: center; background-color: #000000; color: #ffffff;"><span><strong>{{res.stackHero}}</strong></span></td>
+										style="text-align: center; background-color: white; color: blue"><span>{{tiempo}}</span></td>
 								</tr>
 							</tbody>
 						</table>
+
 					</div>
 				</div>
 
