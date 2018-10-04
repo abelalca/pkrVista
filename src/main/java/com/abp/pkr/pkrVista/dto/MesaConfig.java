@@ -22,11 +22,12 @@ public class MesaConfig {
 	private List<Zona> stack = new ArrayList<>();
 	private List<Zona> palos = new ArrayList<>();
 	private List<Zona> mesa = new ArrayList<>();
+	private List<Zona> cartas = new ArrayList<>();
 	private Zona posicion;
-	private Zona cartas;
 	private Zona numjug;
 
 	private String rutaPalos;
+	private String rutaCartas;
 
 	private String formato;
 	private String margenerror;
@@ -201,11 +202,11 @@ public class MesaConfig {
 		this.tessLeng = tessLeng;
 	}
 
-	public Zona getCartas() {
+	public List<Zona> getCartas() {
 		return cartas;
 	}
 
-	public void setCartas(Zona cartas) {
+	public void setCartas(List<Zona> cartas) {
 		this.cartas = cartas;
 	}
 
@@ -271,6 +272,14 @@ public class MesaConfig {
 
 	public void setRutaBugs(String rutaBugs) {
 		this.rutaBugs = rutaBugs;
+	}
+
+	public String getRutaCartas() {
+		return rutaCartas;
+	}
+
+	public void setRutaCartas(String rutaCartas) {
+		this.rutaCartas = rutaCartas;
 	}
 
 }

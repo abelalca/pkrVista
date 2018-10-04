@@ -1,12 +1,13 @@
 package com.abp.pkr.pkrVista.dto;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.codehaus.jackson.annotate.JsonIgnore;
-
 
 public class HandInfoDto {
 
@@ -14,6 +15,7 @@ public class HandInfoDto {
 	private Integer posHero;
 	private int sillaHero;
 	private String hand;
+	private List<String> cartas;
 	// los arrays deben tener length de los jugadores vivos en la mesa
 	private Double[] stacksBb;
 	@JsonIgnore
@@ -86,12 +88,12 @@ public class HandInfoDto {
 		}
 		for (int i = 0; i < tam; i++) {
 			if (this.tmpStacks.get(0) == null) {
-				tam=3;
-				if(i>0) {
-					st[i-1] = this.tmpStacks.get(i);	
+				tam = 3;
+				if (i > 0) {
+					st[i - 1] = this.tmpStacks.get(i);
 				}
-			}else {
-				st[i] = this.tmpStacks.get(i);				
+			} else {
+				st[i] = this.tmpStacks.get(i);
 			}
 		}
 		return st;
@@ -182,15 +184,30 @@ public class HandInfoDto {
 
 	public boolean[] getIsActivo() {
 		boolean[] act = new boolean[3];
-		for (int i=0; i < 3; i++) {
-			if(this.tmpStacks.get(i) != null) {
+		for (int i = 0; i < 3; i++) {
+			if (this.tmpStacks.get(i) != null) {
 				act[i] = true;
 			} else {
-				act[i] = false;				
+				act[i] = false;
 			}
-		}		
-		
+		}
+
 		return act;
+	}
+
+	public List<String> getCartas() {
+		return cartas;
+	}
+
+	public void setCartas(List<String> cartas) {
+		this.cartas = cartas;
+	}
+
+	public void addCarta(String carta) {
+		if (this.cartas == null) {
+			this.cartas = new ArrayList<>();
+		}
+		this.cartas.add(carta);
 	}
 
 }

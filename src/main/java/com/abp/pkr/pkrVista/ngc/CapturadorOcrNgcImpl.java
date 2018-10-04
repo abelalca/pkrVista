@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.LoggerFactory;
@@ -41,6 +40,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 	private static final Logger log = (Logger) LoggerFactory.getLogger(CapturadorOcrNgcImpl.class);
 
 	protected static Map<String, BufferedImage> buffPalos = null;
+//	protected static Map<String, BufferedImage> buffCartas = null;
 	protected static Map<String, BufferedImage> buffColaImagenes = null;
 
 	@Autowired
@@ -71,6 +71,12 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		buffPalos = new HashMap<>();
 		String rutaPalos = mesaConfig.getRutaPalos();
 		capturador.filesToBuffer(buffPalos, rutaPalos);
+		
+		// inicializo buffer de imagenes cartas
+//		buffCartas = new HashMap<>();
+//		String rutaCartas = mesaConfig.getRutaCartas();
+//		capturador.filesToBuffer(buffCartas, rutaCartas);		
+		
 
 		// inicilizo buffer de cola de imagenes para guardar errores
 		buffColaImagenes = new HashMap<>();
@@ -91,10 +97,8 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		Object object = null;
 
 		// Leer Cartas Hero
-		Zona configCartas = mesaConfig.getCartas();
-		List<Zona> configCartasHero = new ArrayList<>();
-		configCartasHero.add(configCartas);
-		objArr = leerInfoPorOCR(screenImg, configCartasHero, TIPO_DATO.STR, "CARTAS", 2, handInfoDto);
+		List<Zona> configCartas = mesaConfig.getCartas();
+		objArr = leerInfoPorOCR(screenImg, configCartas, TIPO_DATO.STR, "CARTAS", 2, handInfoDto);
 		String infoCartas = "";
 		if (ArrayUtils.isNotEmpty(objArr)) {
 			object = objArr[0];
@@ -261,9 +265,13 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		numJug.setNombre("numJug");
 		listImages.add(numJug);
 
-		Zona configCartas = mesaConfig.getCartas();
-		configCartas.setNombre("cartas");
-		listImages.add(configCartas);
+		List<Zona> configCartas = mesaConfig.getCartas();
+		int j=0;
+		for (Zona zona3 : configCartas) {
+			zona3.setNombre("cartas" + j);
+			j++;
+		}
+		listImages.addAll(configCartas);
 
 		List<Zona> configStacks = mesaConfig.getStack();
 		int i = 0;
@@ -282,14 +290,13 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 
 		List<Object> objArry = new ArrayList<>();
 		Arrays.stream(zonaArray).parallel().forEach((zona) -> {
-			Tesseract tesseract = new Tesseract();
 			TIPO_DATO tipoDat = null;
 			try {
 				List<Zona> zonaList = new ArrayList<>();
 				zonaList.add(zona);
 				int factorSize = Integer.valueOf(mesaConfig.getFactorResize());
 				String lengTesse = null;
-				if (zona.getNombre().equals("cartas")) {
+				if (zona.getNombre().contains("cartas")) {
 					lengTesse = "CARTAS";
 					factorSize = 2;
 					tipoDat = TIPO_DATO.STR;
@@ -300,6 +307,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 				}
 				if (zona.getNombre().contains("stacks")) {
 					lengTesse = "NUM";
+//					factorSize = 1;
 					tipoDat = TIPO_DATO.DEC;
 				}
 				if (zona.getNombre().equals("posi")) {
@@ -388,7 +396,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 	private boolean normalizarDatos(Object[] objArr, Zona zona, HandInfoDto handInfoDto) throws Exception {
 		Object object = null;
 		// Leer Cartas Hero
-		if (zona.getNombre().equals("cartas")) {
+		if (zona.getNombre().contains("cartas")) {
 			String infoCartas = "";
 			if (ArrayUtils.isNotEmpty(objArr)) {
 				object = objArr[0];
@@ -397,11 +405,18 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 			} else {
 				throw new Exception("Sin datos para leer");
 			}
-			if (infoCartas.length() != 2) {
-				throw new Exception("No se pudo reconocer cartas");
+			
+			if (("AKQJT98765432".contains(infoCartas))) {
+				handInfoDto.addCarta(infoCartas);				
+			}else {
+				throw new Exception("No se pudo reconocer cartas");				
+			}	
+			
+			if (handInfoDto.getCartas().size() == 2) {
+				String mano = String.join("", handInfoDto.getCartas());
+				handInfoDto.setHand(mano);
+				log.debug("Leyendo cartas de Hero: " + mano);				
 			}
-			handInfoDto.setHand(infoCartas);
-			log.debug("Leyendo cartas de Hero: " + infoCartas);
 		}
 
 		if (zona.getNombre().equals("numJug")) {
@@ -490,7 +505,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 			} else if (lengTesseract != null && lengTesseract.equals("NUMSTR")) {
 				instance.setTessVariable("tessedit_char_whitelist", "0123456789abcdefghijklmnopqrstuvwxyz-");
 			} else if (lengTesseract != null && lengTesseract.equals("CARTAS")) {
-				instance.setTessVariable("tessedit_char_whitelist", "AKQJ1098765432");
+				instance.setTessVariable("tessedit_char_whitelist", "AKQJ9876543210");
 			} else if (lengTesseract != null && lengTesseract.equals("POS")) {
 				instance.setTessVariable("tessedit_char_whitelist", "SBU");
 			}

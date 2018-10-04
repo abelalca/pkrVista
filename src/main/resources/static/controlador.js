@@ -121,22 +121,6 @@ app
 						return "black";
 					}
 
-					function defaultAccion(defAccion) {
-						if (defAccion == "R" || defAccion == "O"
-								|| defAccion == "S" || defAccion == "P") {
-							return "green";
-						}
-						if (defAccion == "L") {
-							return "orange";
-						}
-						if (defAccion == "S") {
-							return "red";
-						}
-						if (defAccion == "F") {
-							return "gray";
-						}
-						return "black";
-					}
 
 					function pintarPantalla(response) {
 						if (response) {
@@ -190,6 +174,37 @@ app
 
 						return hand;
 					}
+					
+					function defaultAccion(defAccion) {
+						if (defAccion == "R") {
+							return "#99ff66";
+						}
+						if (defAccion == "L") {
+							return "#ff9933";
+						}
+						if (defAccion == "O") {
+							return "#ff6666";
+						}
+						return "white";
+					}
+					
+					$scope.pintarAccionJug = function (accionJug) {
+				    	var action = accionJug.substring(0, 1);
+				    	var color = "white";
+				    	if(action == "R" || action == "1"){
+				    		color = "#a6ff4d"
+				    	}
+				    	if(action == "F" || action == "L"){
+				    		color = "#ffff80"
+				    	}
+				    	if(action == "3" || action == "O" || action == "2"){
+				    		color = "#ff6666"
+				    	}
+					    return {
+					    	"background-color": color
+					    }
+					};
+					
 
 					$scope.clickHand = function(manod) {
 						if (!$scope.rango) {

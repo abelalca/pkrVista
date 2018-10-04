@@ -93,32 +93,32 @@
 								</tr>
 								<tr style="height: 20px;">
 									<td ng-repeat="tipoPlayer in tipJug"
-										style="height: 20px; text-align: center; background-color: {{tipoPlayer.color}}"><strong>{{tipoPlayer.tipo}}</strong></td>
+										style="height: 20px; text-align: center; border: 3px solid; padding: 2px; border-color: black; background-color: {{tipoPlayer.color}};"><strong>{{tipoPlayer.tipo}}</strong></td>
 									<td style="height: 20px; text-align: center;"></td>
 									<td ng-repeat="tipoPlayer in tipJug | reverse"
-										style="height: 20px; text-align: center; background-color: {{tipoPlayer.color}}"><strong>{{tipoPlayer.tipo}}</strong></td>
+										style="height: 20px; text-align: center; border: 3px solid; padding: 2px; border-color: black; background-color: {{tipoPlayer.color}}"><strong>{{tipoPlayer.tipo}}</strong></td>
 								</tr>
 
 								<tr style="height: 20px;">
 									<td ng-repeat="accion in acc"
-										style="text-align: center; border: 1px solid; padding: 3px;"><strong>{{accion.izqQA1}}</strong></td>
+										style="text-align: center; border: 1px solid; padding: 3px;" ng-style="pintarAccionJug(accion.izqQA1)"><strong>{{accion.izqQA1}}</strong></td>
 									<td style="height: 20px; text-align: center;"></td>
 									<td ng-repeat="accion in acc | reverse"
-										style="text-align: center; border: 1px solid; padding: 3px;"><strong>{{accion.derQA1}}</strong></td>
+										style="text-align: center; border: 1px solid; padding: 3px;" ng-style="pintarAccionJug(accion.derQA1)"><strong>{{accion.derQA1}}</strong></td>
 								</tr>
 								<tr style="height: 20px;">
 									<td ng-repeat="accion in acc"
-										style="text-align: center; border: 1px solid; padding: 3px;"><strong>{{accion.izqQA2}}</strong></td>
+										style="text-align: center; border: 1px solid; padding: 3px;" ng-style="pintarAccionJug(accion.izqQA2)"><strong>{{accion.izqQA2}}</strong></td>
 									<td style="height: 20px; text-align: center;"></td>
 									<td ng-repeat="accion in acc | reverse"
-										style="text-align: center; border: 1px solid; padding: 3px;"><strong>{{accion.derQA2}}</strong></td>
+										style="text-align: center; border: 1px solid; padding: 3px;" ng-style="pintarAccionJug(accion.derQA2)"><strong>{{accion.derQA2}}</strong></td>
 								</tr>
 								<tr style="height: 20px;">
 									<td ng-repeat="accion in acc"
-										style="text-align: center; border: 3px solid; padding: 3px; border-color: red"><strong>{{accion.izqQA3}}</strong></td>
+										style="text-align: center; border: 3px solid; padding: 3px; border-color: red;"><strong>{{accion.izqQA3}}</strong></td>
 									<td style="height: 20px; text-align: center;"></td>
 									<td ng-repeat="accion in acc | reverse"
-										style="text-align: center; border: 3px solid; padding: 3px; border-color: red"><strong>{{accion.derQA3}}</strong></td>
+										style="text-align: center; border: 3px solid; padding: 3px; border-color: red;"><strong>{{accion.derQA3}}</strong></td>
 								</tr>
 								<tr style="height: 20px;">
 									<td colspan="{{anchoColum}}"></td>
@@ -134,7 +134,7 @@
 									<td
 										style="text-align: center; border: 2px solid; opacity: 0.9; background-color: {{defAcc}}">
 										<h1>
-											<span style="color: white; margin: 10px; opacity: 1">
+											<span style="color: black; margin: 10px; opacity: 1">
 												{{carta1}}<span ng-bind-html="palo1"></span>{{carta2}}<span
 												ng-bind-html="palo2"> </span>
 										</h1>
@@ -179,12 +179,11 @@
 				<div id="tabHand" class="tab-pane fade">
 					<div class="container-fluid" style="margin-top: 10px;">
 						<button type="button" class="btn btn-danger"
-							ng-click=limpiarRangos()>Clear All</button>
+							ng-click="limpiarRangos()">Clear All</button>
 						<table border="2" style="margin-top: 10px; padding: 1px;">
 							<tbody>
 								<tr ng-repeat="fila in allHands" style="height: 50px;">
-									<td ng-repeat="manod in fila" style=""
-										ng-click="clickHand(manod)">{{manod.value}}</td>
+									<td ng-repeat="manod in fila" style="{{manod.estilo}}"	ng-click="clickHand(manod)">{{manod.value}}</td>
 								</tr>
 							</tbody>
 						</table>
