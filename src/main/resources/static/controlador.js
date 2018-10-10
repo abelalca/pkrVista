@@ -34,8 +34,7 @@ app
 								});
 					};
 
-					$scope.accionTiempoReal = function() {
-						
+					$scope.accionTiempoReal = function() {						
 						$http.get('/captura/mesaInfo').then(function(response) {
 							if (response.data.hand) {
 								pintarPantalla(response);

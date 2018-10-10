@@ -3,14 +3,6 @@
  */
 package com.abp.pkr.pkrVista.service;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -23,12 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.abp.pkr.pkrVista.Pru.CapturadorNgcImplPru;
 import com.abp.pkr.pkrVista.dto.AccionInfoDto;
 import com.abp.pkr.pkrVista.dto.HandInfoDto;
-import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
 
 import ch.qos.logback.classic.Logger;
 
@@ -46,7 +32,7 @@ public class CapturadorPruebasSrv {
 	CapturadorNgcImplPru capturadorNgcImplPru;
 
 	/**
-	 * Servicio par probar la extraccion de info, desde una imagen existente en la
+	 * Servicio para probar la extraccion de info, desde una imagen existente en la
 	 * carpeta especificada en archivo de configuracion
 	 * 
 	 * @author Alesso
@@ -98,6 +84,12 @@ public class CapturadorPruebasSrv {
 		return capturadorNgcImplPru.obtenerImg();
 	}
 
+	
+	/** A partir de una imagen almacenada en una carpeta configurable, se obtiene las acciones a tomar
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
 	@GetMapping(value = "/accionDesdeImagen")
 	public AccionInfoDto accionDesdeImagen() throws Exception {
 		long ini = System.currentTimeMillis();
@@ -110,12 +102,18 @@ public class CapturadorPruebasSrv {
 
 		
 		long fin = System.currentTimeMillis();
-		handInfo.setTiempoRest((fin - ini));
+		acc.setTiempo((fin - ini));
 		log.debug("tiempo extraer Info desde iamgen: " + (fin - ini));
 
 		return acc;
 	}
 	
+	
+	/** A partir de un archivo Json se obtiene la accion a tomar
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
 	@GetMapping(value = "/accionDesdeJson")
 	public AccionInfoDto accionDesdeJson() throws Exception {
 		long ini = System.currentTimeMillis();

@@ -43,7 +43,7 @@
 			<ul class="nav nav-tabs">
 				<li class="active"><a data-toggle="tab" href="#tabReal">Real
 						Time</a></li>
-				<li><a data-toggle="tab" href="#tabTest">Test ScreenShot</a></li>
+<!-- 				<li><a data-toggle="tab" href="#tabTest">Test ScreenShot</a></li> -->
 				<li><a data-toggle="tab" href="#tabHand" ng-click=initabHand()>Hand
 						ranges</a></li>
 			</ul>
@@ -67,8 +67,8 @@
 <!-- 								ng-click=dispararShoot()>Shoot</button> -->
 							<button type="button" class="btn btn-light"
 								ng-click=accionDesdeImagen()>Test Imagen File</button>
-							<button type="button" class="btn btn-light"
-								ng-click=accionDesdeJson()>Test Json File</button>
+<!-- 							<button type="button" class="btn btn-light" -->
+<!-- 								ng-click=accionDesdeJson()>Test Json File</button> -->
 						</div>
 
 						<!-- 						fila de cuadrantes -->
@@ -151,29 +151,29 @@
 					</div>
 				</div>
 
-				<!-- 				segunda tab -->
-				<div id="tabTest" class="tab-pane fade">
-					<h3>Tester</h3>
-					<div class="row">
-						<div class="col-xs-8 col-xs-offset-4">
-							<button type="button" class="btn btn-success"
-								ng-click="infoTiempoReal()">ScrenShoot</button>
-							<button type="button" class="btn btn-primary"
-								ng-click="guardarInfo()">Guardar</button>
-						</div>
-					</div>
-					<div class="row" style="margin-top: 15px;">
-						<div class="col-md-12">
-							<pre>{{res}}</pre>
-						</div>
-					</div>
-					<div class="row" style="margin-top: 15px;">
-						<div class="col-md-12" ng-init="imgTmp = 'img/tmpImg.png'">
-							<img ng-src="{{imgTmp}}"
-								style="max-width: 100%; max-height: 100%" />
-						</div>
-					</div>
-				</div>
+<!-- 								segunda tab -->
+<!-- 				<div id="tabTest" class="tab-pane fade"> -->
+<!-- 					<h3>Tester</h3> -->
+<!-- 					<div class="row"> -->
+<!-- 						<div class="col-xs-8 col-xs-offset-4"> -->
+<!-- 							<button type="button" class="btn btn-success" -->
+<!-- 								ng-click="infoTiempoReal()">ScrenShoot</button> -->
+<!-- 							<button type="button" class="btn btn-primary" -->
+<!-- 								ng-click="guardarInfo()">Guardar</button> -->
+<!-- 						</div> -->
+<!-- 					</div> -->
+<!-- 					<div class="row" style="margin-top: 15px;"> -->
+<!-- 						<div class="col-md-12"> -->
+<!-- 							<pre>{{res}}</pre> -->
+<!-- 						</div> -->
+<!-- 					</div> -->
+<!-- 					<div class="row" style="margin-top: 15px;"> -->
+<!-- 						<div class="col-md-12" ng-init="imgTmp = 'img/tmpImg.png'"> -->
+<!-- 							<img ng-src="{{imgTmp}}" -->
+<!-- 								style="max-width: 100%; max-height: 100%" /> -->
+<!-- 						</div> -->
+<!-- 					</div> -->
+<!-- 				</div> -->
 
 
 				<div id="tabHand" class="tab-pane fade">

@@ -5,15 +5,12 @@ package com.abp.pkr.pkrVista.Pru;
 
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
-import java.util.Date;
-import java.util.List;
 
 import javax.imageio.ImageIO;
 
@@ -50,15 +47,28 @@ public class CapturadorNgcImplPru extends CapturadorOcrNgcImpl {
 		// leemos imagen desde directorio
 		String ruta = home + mesaConfig.getRutacaptura() + "\\" + mesaConfig.getNombrearchivo()
 				+ mesaConfig.getFormato();
-		BufferedImage img = ImageIO.read(new File(ruta));
+		BufferedImage screenImg = ImageIO.read(new File(ruta));
 		log.debug("leyendo imagen desde directorio: " + ruta);
 
 		// procesamos zonas
 		long ini = System.currentTimeMillis();
-		handInfoDto = procesarZonasParalelo(img);
-		long fin = System.currentTimeMillis();
-		log.debug("tiempo OCR imagen: " + (fin-ini));
-		handInfoDto.setTiempoRest((fin-ini));
+		// procesamos zonas
+		try {
+			log.debug("Procesando imagen para obtener infor mesa...");
+
+			// seleccionamos tipo de procesamiento configurado y procesamos la imagen
+			String tipoOcr = mesaConfig.getTipoOCR();
+			log.debug("tipo de procesamiento: " + tipoOcr);
+			if (tipoOcr.trim().equals("histogram")) {
+				handInfoDto = procesarZonasPorHistograma(screenImg);
+			}
+			long fin = System.currentTimeMillis();
+			log.debug("...tiempo procesado imagen: " + (fin - ini));
+			handInfoDto.setTiempoRest((fin - ini));
+		} catch (Exception e) {
+			log.error(e.getMessage());
+			handInfoDto = null;
+		}
 
 		return handInfoDto;
 	}
@@ -74,13 +84,12 @@ public class CapturadorNgcImplPru extends CapturadorOcrNgcImpl {
 		// Guardar Imagen y info
 		String ruta = home + mesaConfig.getRutaBugs();
 		UtilView.guardarImagen(screenImg, ruta + "\\tmpImg.png");
-		
+
 		// procesamos zonas
 		long ini = System.currentTimeMillis();
-		handInfoDto = procesarZonasParalelo(screenImg);
+//		handInfoDto = procesarZonasParalelo(screenImg);
 		long fin = System.currentTimeMillis();
-		handInfoDto.setTiempoRest(fin-ini);
-		
+		handInfoDto.setTiempoRest(fin - ini);
 
 		try (Writer writer = new FileWriter(ruta + "\\tmpJson")) {
 			Gson gson = new GsonBuilder().create();

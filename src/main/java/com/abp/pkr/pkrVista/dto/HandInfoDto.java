@@ -64,6 +64,18 @@ public class HandInfoDto {
 	public void setPosHero(Integer posHero) {
 		this.posHero = posHero;
 	}
+	
+	public void setPosHero(String posHero) {
+		if (posHero.equals("BB")) {
+			this.posHero = 0;
+		}
+		if (posHero.equals("SB")) {
+			this.posHero = 1;
+		}
+		if (posHero.equals("BU")) {
+			this.posHero = 2;
+		}
+	}
 
 	public Double[] getStacksBb() {
 		return stacksBb;
@@ -77,7 +89,9 @@ public class HandInfoDto {
 		if (this.tmpStacks == null) {
 			this.tmpStacks = new HashMap<>();
 		}
-		this.tmpStacks.put(posicion, stack);
+		if (stack > 0) {
+			this.tmpStacks.put(posicion, stack);			
+		}
 	}
 
 	public Double[] obtenerStack() {
@@ -185,7 +199,7 @@ public class HandInfoDto {
 	public boolean[] getIsActivo() {
 		boolean[] act = new boolean[3];
 		for (int i = 0; i < 3; i++) {
-			if (this.tmpStacks.get(i) != null) {
+			if (this.tmpStacks.get(i) != null && this.tmpStacks.get(i) > 0) {
 				act[i] = true;
 			} else {
 				act[i] = false;
@@ -203,11 +217,32 @@ public class HandInfoDto {
 		this.cartas = cartas;
 	}
 
-	public void addCarta(String carta) {
+	public void addCarta(String carta, int posicion) {
 		if (this.cartas == null) {
-			this.cartas = new ArrayList<>();
+			this.cartas = new ArrayList<>(4);
+			this.cartas.add(null);
+			this.cartas.add(null);
+			this.cartas.add(null);
+			this.cartas.add(null);
 		}
-		this.cartas.add(carta);
+		this.cartas.set(posicion, carta);
 	}
+	
+	public boolean equals(HandInfoDto hand) {
+		if(!this.hand.equals(hand.hand)) return false;
+		if(!this.numjug.equals(hand.numjug)) return false;
+		if(!this.posHero.equals(hand.posHero)) return false;
+		if(!this.btnPos.equals(hand.btnPos)) return false;
+		if(!this.posHero.equals(hand.posHero)) return false;
+		if(this.stacksBb.length != hand.getStacksBb().length) return false;
+		for (int i=0; i<hand.getStacksBb().length; i++) {
+			Double shand = hand.getStacksBb()[i];
+			Double stref = this.stacksBb[i];
+			if(shand != stref) return false;
+		}
+		
+		return true;		
+	}
+	
 
 }

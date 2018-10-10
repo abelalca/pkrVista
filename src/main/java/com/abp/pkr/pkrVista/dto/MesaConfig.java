@@ -28,15 +28,21 @@ public class MesaConfig {
 
 	private String rutaPalos;
 	private String rutaCartas;
+	private String rutaStacks;
+	private String rutaPosicion;
+	private String rutaNumjug;
 
 	private String formato;
 	private String margenerror;
 	private String sillahero;
+	private String tipoOCR;
+	private String capturazonas;
 
 	// OCR CONFIG
 	private String factorResize;
 	private String tessdata;
 	private String tessLeng;
+	private String  waitAnalisis;
 
 	// rutas de archivos Pruebas
 	private String rutacaptura;
@@ -280,6 +286,54 @@ public class MesaConfig {
 
 	public void setRutaCartas(String rutaCartas) {
 		this.rutaCartas = rutaCartas;
+	}
+
+	public String getTipoOCR() {
+		return tipoOCR;
+	}
+
+	public void setTipoOCR(String tipoOCR) {
+		this.tipoOCR = tipoOCR;
+	}
+
+	public String getRutaStacks() {
+		return rutaStacks;
+	}
+
+	public void setRutaStacks(String rutaStacks) {
+		this.rutaStacks = rutaStacks;
+	}
+
+	public String getCapturazonas() {
+		return capturazonas;
+	}
+
+	public void setCapturazonas(String capturazonas) {
+		this.capturazonas = capturazonas;
+	}
+
+	public String getRutaPosicion() {
+		return rutaPosicion;
+	}
+
+	public void setRutaPosicion(String rutaPosicion) {
+		this.rutaPosicion = rutaPosicion;
+	}
+
+	public String getRutaNumjug() {
+		return rutaNumjug;
+	}
+
+	public void setRutaNumjug(String rutaNumjug) {
+		this.rutaNumjug = rutaNumjug;
+	}
+
+	public String getWaitAnalisis() {
+		return waitAnalisis;
+	}
+
+	public void setWaitAnalisis(String waitAnalisis) {
+		this.waitAnalisis = waitAnalisis;
 	}
 
 }

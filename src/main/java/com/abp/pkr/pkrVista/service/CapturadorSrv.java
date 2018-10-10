@@ -32,10 +32,9 @@ public class CapturadorSrv {
 
 	@Autowired
 	private CapturadorOcrNgcImpl capturadorOcrNgcImpl;
-	
+
 	@Autowired
 	protected CapturadorNgcImpl capturador;
-
 
 	/**
 	 * Servicio que es llamado para tomar un screenshot y extraer la informacion de
@@ -51,42 +50,44 @@ public class CapturadorSrv {
 		long ini = System.currentTimeMillis();
 		long fin = System.currentTimeMillis();
 		AccionInfoDto accion = new AccionInfoDto();
-		
+
 		// mesa que estoy parado, debemos obtener las coord del mouse para
 		// saber en que mesa estamos
 		Zona mesaActual = capturador.mesaMouse();
 
-		HandInfoDto handInfoDto = capturadorOcrNgcImpl.extraerMesaInfo(mesaActual);
+		HandInfoDto handInfoDto = null;
+		try {
+			handInfoDto = capturadorOcrNgcImpl.extraerMesaInfo(mesaActual);
+		} catch (Exception e) {
+			throw e;
+		}
 
 		if (handInfoDto != null) {
 			try {
-				accion= consumirLogicPre(handInfoDto);
+				accion = consumirLogicPre(handInfoDto);
 			} catch (Exception e) {
 				throw e;
 			}
 
 			fin = System.currentTimeMillis();
 			handInfoDto.setTiempoRest((fin - ini));
-			log.debug("tiempo extraer Info mesa: " + (fin - ini));
-			accion.setTiempo(fin-ini);
+			log.debug("tiempo extraer Accion info de mesa: " + (fin - ini));
+			accion.setTiempo(fin - ini);
 		}
 
 		return accion;
 	}
-	
-	
+
 	@GetMapping(value = "/almacenarImagenCuadrante")
 	public void almacenarImagenCuadrante(String cuadrante) throws Exception {
 		capturadorOcrNgcImpl.almacenarImagenCuadrante(cuadrante);
 	}
-	
+
 	@GetMapping(value = "/obtenerNombresCuadrantes")
 	public List<String> obtenerNombresCuadrantes() throws Exception {
-		List<String> lista = capturadorOcrNgcImpl.obtenerNombresCuadrantes();		
-		return lista;		
+		List<String> lista = capturadorOcrNgcImpl.obtenerNombresCuadrantes();
+		return lista;
 	}
-	
-	
 
 	public AccionInfoDto consumirLogicPre(HandInfoDto handInfoDto) {
 		final String url = "http://localhost:8450/proceso/procesarHand";
