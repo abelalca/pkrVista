@@ -3,11 +3,11 @@ var app = angular.module('app', []);
 app
 		.controller(
 				'mainCtl',
-				function($scope, $http, $timeout, $sce) {			
-					
+				function($scope, $http, $timeout, $sce) {
+					$scope.showAlerta=false;
+
 					obtenerNombresCuadrantes();
-					
-					
+
 					function obtenerNombresCuadrantes() {
 						$http.get('/captura/obtenerNombresCuadrantes').then(
 								function(response) {
@@ -34,7 +34,7 @@ app
 								});
 					};
 
-					$scope.accionTiempoReal = function() {						
+					$scope.accionTiempoReal = function() {
 						$http.get('/captura/mesaInfo').then(function(response) {
 							if (response.data.hand) {
 								pintarPantalla(response);
@@ -82,6 +82,8 @@ app
 
 					$scope.iniciarAsesor = function() {
 						$scope.ciclar = true;
+						$scope.estadoRun='success';
+						$scope.estadoStop='default';
 						if ($scope.ciclar) {
 							$scope.accionTiempoReal();
 						}
@@ -96,12 +98,32 @@ app
 					}
 
 					$scope.detener = function() {
+						$scope.estadoRun='default';
+						$scope.estadoStop='danger';
 						$scope.ciclar = false;
 					}
 
 					$scope.limpiarRangos = function() {
 						$scope.rango = "";
 						angular.copy($scope.origHands, $scope.allHands);
+					}
+
+					$scope.capturarZona = function(zonaCaptura) {
+						$scope.zonaCaptura = zonaCaptura;
+						$http.get('/pruebas/capturarZona', {
+							params : {
+								zonaNombre : zonaCaptura
+							}
+						}).then(function(response) {
+							if (response.data) {
+								$scope.showAlerta=true;
+							} 
+							setTimeout(function() {
+							    $scope.showAlerta=false;
+							    $scope.$digest();
+							}, 1000);
+						});
+
 					}
 
 					function colorTipJug(tipo) {
@@ -119,7 +141,6 @@ app
 						}
 						return "black";
 					}
-
 
 					function pintarPantalla(response) {
 						if (response) {
@@ -173,7 +194,7 @@ app
 
 						return hand;
 					}
-					
+
 					function defaultAccion(defAccion) {
 						if (defAccion == "R") {
 							return "#99ff66";
@@ -186,24 +207,23 @@ app
 						}
 						return "white";
 					}
-					
-					$scope.pintarAccionJug = function (accionJug) {
-				    	var action = accionJug.substring(0, 1);
-				    	var color = "white";
-				    	if(action == "R" || action == "1"){
-				    		color = "#a6ff4d"
-				    	}
-				    	if(action == "F" || action == "L"){
-				    		color = "#ffff80"
-				    	}
-				    	if(action == "3" || action == "O" || action == "2"){
-				    		color = "#ff6666"
-				    	}
-					    return {
-					    	"background-color": color
-					    }
+
+					$scope.pintarAccionJug = function(accionJug) {
+						var action = accionJug.substring(0, 1);
+						var color = "white";
+						if (action == "R" || action == "1") {
+							color = "#a6ff4d"
+						}
+						if (action == "F" || action == "L") {
+							color = "#ffff80"
+						}
+						if (action == "3" || action == "O" || action == "2") {
+							color = "#ff6666"
+						}
+						return {
+							"background-color" : color
+						}
 					};
-					
 
 					$scope.clickHand = function(manod) {
 						if (!$scope.rango) {
@@ -1086,7 +1106,6 @@ app
 					}
 
 					$scope.origHands = angular.copy($scope.allHands);
-
 
 				});
 

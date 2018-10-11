@@ -137,9 +137,13 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 	private boolean almacenarLectura(List<HandInfoDto> bufferManos, HandInfoDto handInfoDto) {
 
 		for (HandInfoDto h : bufferManos) {
-			boolean b = h.equals(handInfoDto);
-			if (b) {
-				return false;
+			try {
+				boolean b = h.equals(handInfoDto);				
+				if (b) {
+					return false;
+				}
+			} catch (Exception e) {
+				return true;
 			}
 		}
 
@@ -483,7 +487,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 	}
 
 	public void almacenarImagenCuadrante(String cuadrante) {
-		String ruta = home + mesaConfig.getRutacaptura() + "\\bugs";
+		String ruta = home + mesaConfig.getRutaBugs();
 		Long date = new Date().getTime();
 		try {
 			BufferedImage img = buffColaImagenes.get(cuadrante);

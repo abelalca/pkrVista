@@ -133,5 +133,11 @@ public class CapturadorPruebasSrv {
 	}
 	
 	
+	@GetMapping(value = "/capturarZona")
+	public boolean capturarZona(String zonaNombre) throws Exception {
+		boolean b = capturadorNgcImplPru.capturarZona(zonaNombre);		
+		return b;
+	}
+	
 
 }

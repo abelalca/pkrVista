@@ -58,17 +58,19 @@
 					<div class="container-fluid" style="margin-top: 10px;">
 						<!-- 					 fila de botones -->
 						<div class="row">
-							<button type="button" class="btn btn-success btn-lg"
+							<button type="button" class="btn btn-{{estadoRun}} btn-lg" ng-init="estadoRun='default'"
 								ng-click=iniciarAsesor()>Start</button>
-							<button type="button" class="btn btn-danger btn-lg"
+							<button type="button" class="btn btn-{{estadoStop}} btn-lg" ng-init="estadoStop='danger'"
 								ng-click=detener()>Stop</button>
 <!-- 							<button type="button" class="btn btn-default" -->
 <!-- 								title="se debe cambiar configuracion de mesaconf.mesa" -->
 <!-- 								ng-click=dispararShoot()>Shoot</button> -->
 							<button type="button" class="btn btn-light"
-								ng-click=accionDesdeImagen()>Test Imagen File</button>
-<!-- 							<button type="button" class="btn btn-light" -->
-<!-- 								ng-click=accionDesdeJson()>Test Json File</button> -->
+								ng-click=accionDesdeImagen()>Test Imagen File</button>								
+    							<button class="btn btn-light" type="button" ng-click=capturarZona(zonaCaptura)>Capturar Zona</button>
+  								<input type="text" ng-model="zonaCaptura" ng-init="zonaCaptura='QA1'">
+								<span class="glyphicon glyphicon-ok" ng-show="showAlerta"></span>
+								
 						</div>
 
 						<!-- 						fila de cuadrantes -->

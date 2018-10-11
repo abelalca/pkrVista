@@ -11,6 +11,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
@@ -24,6 +26,8 @@ import org.springframework.web.client.RestTemplate;
 
 import com.abp.pkr.pkrVista.dto.AccionInfoDto;
 import com.abp.pkr.pkrVista.dto.HandInfoDto;
+import com.abp.pkr.pkrVista.dto.MesaConfig;
+import com.abp.pkr.pkrVista.dto.MesaConfig.Zona;
 import com.abp.pkr.pkrVista.ngc.CapturadorOcrNgcImpl;
 import com.abp.pkr.pkrVista.utl.UtilView;
 import com.google.gson.Gson;
@@ -87,7 +91,7 @@ public class CapturadorNgcImplPru extends CapturadorOcrNgcImpl {
 
 		// procesamos zonas
 		long ini = System.currentTimeMillis();
-//		handInfoDto = procesarZonasParalelo(screenImg);
+		// handInfoDto = procesarZonasParalelo(screenImg);
 		long fin = System.currentTimeMillis();
 		handInfoDto.setTiempoRest(fin - ini);
 
@@ -141,6 +145,35 @@ public class CapturadorNgcImplPru extends CapturadorOcrNgcImpl {
 		HandInfoDto dataJson = gson.fromJson(reader, HandInfoDto.class);
 
 		return dataJson;
+	}
+
+	public boolean capturarZona(String zonaNombre) throws Exception {
+		boolean resp = false;
+		
+		Zona mesa = null;
+		for (Zona zona : mesaConfig.getMesa()) {
+			if (zona.getNombre().trim().equals(zonaNombre.trim())) {
+				mesa = zona;
+			}
+		}
+		if (mesa == null) {
+			throw new Exception("no existe zona con ese nombre");
+		}
+
+		// capturo screen
+		Rectangle zona = new Rectangle(mesa.getX(), mesa.getY(), mesa.getAncho(), mesa.getAlto());
+		BufferedImage screenImg = capturador.capturarScreenZona(zona);
+
+		Zona[] listaZonas = listarTodasZonas();
+
+		Arrays.stream(listaZonas).forEach(z -> {
+			BufferedImage subImg = extraerSubImagen(screenImg, z);
+			UtilView.guardarImagen(subImg, home + mesaConfig.getRutacaptura() + "\\screen_" + zonaNombre + "-"
+					+ z.getNombre() + "_" + System.currentTimeMillis() + ".png");
+		});
+
+		resp=true;
+		return resp;
 	}
 
 }
