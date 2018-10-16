@@ -11,8 +11,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 
@@ -56,25 +60,55 @@ public class CapturadorNgcImplPru extends CapturadorOcrNgcImpl {
 
 		// procesamos zonas
 		long ini = System.currentTimeMillis();
-		// procesamos zonas
-		try {
-			log.debug("Procesando imagen para obtener infor mesa...");
+		
+		// creamos una lista para obtener iterar la lectura de imagenes y obtener la mas
+		// probable
+		int numItera = Integer.valueOf(mesaConfig.getNumIteraCaptura().trim());
 
-			// seleccionamos tipo de procesamiento configurado y procesamos la imagen
-			String tipoOcr = mesaConfig.getTipoOCR();
-			log.debug("tipo de procesamiento: " + tipoOcr);
-			if (tipoOcr.trim().equals("histogram")) {
-				handInfoDto = procesarZonasPorHistograma(screenImg);
-			}
-			long fin = System.currentTimeMillis();
-			log.debug("...tiempo procesado imagen: " + (fin - ini));
-			handInfoDto.setTiempoRest((fin - ini));
-		} catch (Exception e) {
-			log.error(e.getMessage());
-			handInfoDto = null;
+		List<BufferedImage> screenList = new ArrayList<>();
+		for (int i = 0; i < numItera; i++) {
+			screenList.add(screenImg);
 		}
+		
+		List<HandInfoDto> hdto = new ArrayList<>();
+		screenList.stream().parallel().forEach(screen -> {
+			try {
+				log.debug("Procesando imagen para obtener infor mesa...");
+				
+				// seleccionamos tipo de procesamiento configurado y procesamos la imagen
+				String tipoOcr = mesaConfig.getTipoOCR();
+				log.debug("tipo de procesamiento: " + tipoOcr);
+				if (tipoOcr.trim().equals("histogram")) {					
+					hdto.add(procesarZonasPorHistograma(screenImg));	
+				}
+			} catch (Exception e) {
+				log.error(e.getMessage());
+			}			
+		});
+		
+		Map<String, List<HandInfoDto>> result = hdto.stream().collect(Collectors.groupingBy(HandInfoDto::concat));
 
-		return handInfoDto;
+		Map<String, Integer> resCount = new HashMap<>();
+		result.entrySet().forEach(entry -> {
+			String key = entry.getKey();
+			Integer value = entry.getValue().size();
+			resCount.put(key, value);
+		});
+
+		String maxKey = resCount.entrySet().stream().max(Map.Entry.comparingByValue()).get().getKey();
+
+		HandInfoDto resComp = null;
+		for (HandInfoDto hd : hdto) {
+			if (hd.concat().equals(maxKey)) {
+				resComp = hd;
+				break;
+			}
+		}	
+		long fin = System.currentTimeMillis();
+		log.debug("...tiempo procesado imagen: " + (fin - ini));
+		resComp.setTiempoRest((fin-ini));
+		
+		return resComp;
 	}
 
 	public HandInfoDto extraerInfoArchivoRealTime() throws Exception {

@@ -162,7 +162,17 @@ app
 							$scope.defAcc = defaultAccion($scope.res.defAccion);
 							$scope.res.hand = pintarHand($scope.res.hand);
 							$scope.tiempo = $scope.res.tiempo;
-
+							$scope.mesaNombre = $scope.res.mesaNombre;
+							
+							if($scope.res.posHero == "BB" && $scope.res.numJug=='3max'){
+								$scope.LL = $scope.res.ll;
+								$scope.LR = $scope.res.lr;
+								$scope.LS = $scope.res.ls;
+								$scope.RC = $scope.res.rc;
+								$scope.RS = $scope.res.rs;
+								$scope.SS = $scope.res.ss;
+								$scope.eff3WayStack = $scope.res.eff3WayStack;								
+							}
 						}
 					}
 

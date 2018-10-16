@@ -24,7 +24,7 @@ public class MesaConfig {
 	private List<Zona> mesa = new ArrayList<>();
 	private List<Zona> cartas = new ArrayList<>();
 	private Zona posicion;
-	private Zona numjug;
+	private Zona numjug;	
 
 	private String rutaPalos;
 	private String rutaCartas;
@@ -36,7 +36,9 @@ public class MesaConfig {
 	private String margenerror;
 	private String sillahero;
 	private String tipoOCR;
+	private String catalanoError;
 	private String capturazonas;
+	private String numIteraCaptura;
 
 	// OCR CONFIG
 	private String factorResize;
@@ -335,5 +337,21 @@ public class MesaConfig {
 	public void setWaitAnalisis(String waitAnalisis) {
 		this.waitAnalisis = waitAnalisis;
 	}
+
+	public String getCatalanoError() {
+		return catalanoError;
+	}
+
+	public void setCatalanoError(String catalanoError) {
+		this.catalanoError = catalanoError;
+	}
+
+	public String getNumIteraCaptura() {
+		return numIteraCaptura;
+	}
+
+	public void setNumIteraCaptura(String numIteraCaptura) {
+		this.numIteraCaptura = numIteraCaptura;
+	}	
 
 }

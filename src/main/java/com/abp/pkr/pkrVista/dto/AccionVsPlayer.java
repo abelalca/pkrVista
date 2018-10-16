@@ -10,8 +10,6 @@ public class AccionVsPlayer {
 	private String derQA2;
 	private String derQA3;
 
-	private String overcall;
-
 	public String getIzqQA1() {
 		return izqQA1;
 	}
@@ -58,14 +56,6 @@ public class AccionVsPlayer {
 
 	public void setDerQA3(String derQA3) {
 		this.derQA3 = derQA3;
-	}
-
-	public String getOvercall() {
-		return overcall;
-	}
-
-	public void setOvercall(String overcall) {
-		this.overcall = overcall;
 	}
 
 }

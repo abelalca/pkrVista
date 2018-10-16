@@ -14,8 +14,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
@@ -138,7 +141,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 
 		for (HandInfoDto h : bufferManos) {
 			try {
-				boolean b = h.equals(handInfoDto);				
+				boolean b = h.equals(handInfoDto);
 				if (b) {
 					return false;
 				}
@@ -177,6 +180,10 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 				}
 				int posic = Integer.valueOf(key.substring(6, 7));
 				String valor = value.toString().replace(",", ".");
+				int index = valor.indexOf("_");
+				if (index > 0) {
+					valor = valor.substring(0, index);
+				}
 				Double val = Double.valueOf(valor);
 				handInfoDto.addStack(val, posic);
 				log.debug("Leyendo info stack > " + key + " : " + valor);
@@ -373,7 +380,30 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 
 			ObjectiveFidelity o = new ObjectiveFidelity(original, reconstructed);
 
-			double error = o.getMSE();
+			String catalanoError = mesaConfig.getCatalanoError();
+			double error = Double.MAX_VALUE;
+			if (catalanoError.trim().equals("mse")) {
+				error = o.getMSE();
+			}
+			if (catalanoError.trim().equals("snr")) {
+				error = o.getSNR();
+			}
+			if (catalanoError.trim().equals("psnr")) {
+				error = o.getPSNR();
+			}
+			if (catalanoError.trim().equals("mae")) {
+				error = o.getMAE();
+			}
+			if (catalanoError.trim().equals("dsnr")) {
+				error = o.getDSNR();
+			}
+			if (catalanoError.trim().equals("uqi")) {
+				error = o.getUniversalQualityIndex();
+			}
+			if (catalanoError.trim().equals("toterror")) {
+				error = o.getTotalError();
+			}
+
 			disper.put(map.getKey(), error);
 		});
 
@@ -450,31 +480,71 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		BufferedImage screenImg = capturador.capturarScreenZona(zona);
 		log.debug("Capturando Imagen (ancho,alto): " + screenImg.getWidth() + ", " + screenImg.getHeight());
 
+		// creamos una lista para obtener iterar la lectura de imagenes y obtener la mas
+		// probable
+		int numItera = Integer.valueOf(mesaConfig.getNumIteraCaptura().trim());
+
+		List<BufferedImage> screenList = new ArrayList<>();
+		for (int i = 0; i < numItera; i++) {
+			screenList.add(screenImg);
+		}
+
 		// procesamos zonas
-		try {
-			log.debug("Procesando imagen para obtener informacion de mesa: " + mesaActual.getNombre());
-			// seleccionamos tipo de procesamiento configurado y procesamos la imagen
-			String tipoOcr = mesaConfig.getTipoOCR();
-			if (tipoOcr.equals("histogram")) {
-				handInfoDto = procesarZonasPorHistograma(screenImg);
+		List<HandInfoDto> hdto = new ArrayList<>();
+		screenList.parallelStream().forEach(screen -> {
+			try {
+				log.debug("Procesando imagen para obtener informacion de mesa: " + mesaActual.getNombre());
+				// seleccionamos tipo de procesamiento configurado y procesamos la imagen
+				String tipoOcr = mesaConfig.getTipoOCR();
+				if (tipoOcr.equals("histogram")) {
+					hdto.add(procesarZonasPorHistograma(screen));				}
+			} catch (Exception e) {
+				log.error(e.getMessage());
 			}
-		} catch (Exception e) {
-			log.error(e.getMessage());
-			handInfoDto = null;
+		});
+
+		// encontrar el resultado mas probable de todas las lecturas
+//		Map<String, Integer> cuenta = new HashMap<>();
+//		
+//		for (int i = 1; i < hdto.size(); i++) {
+//			if (hdto.get(i).equals(hdto.get(i-1))) {
+//				cuenta.put(hdto.get(i).concat(), )
+//			}
+//			
+//		}
+		
+		
+		Map<String, List<HandInfoDto>> result = hdto.stream().collect(Collectors.groupingBy(HandInfoDto::concat));
+
+		Map<String, Integer> resCount = new HashMap<>();
+		result.entrySet().forEach(entry -> {
+			String key = entry.getKey();
+			Integer value = entry.getValue().size();
+			resCount.put(key, value);
+		});
+
+		String maxKey = resCount.entrySet().stream().max(Map.Entry.comparingByValue()).get().getKey();
+
+		HandInfoDto resComp = null;
+		for (HandInfoDto hd : hdto) {
+			if (hd.concat().equals(maxKey)) {
+				resComp = hd;
+				break;
+			}
 		}
 
 		// almacenar mano leida para no procesarla dos veces
-		boolean procesarLectura = almacenarLectura(bufferManosAnalizadas, handInfoDto);
+		boolean procesarLectura = almacenarLectura(bufferManosAnalizadas, resComp);
 		if (!procesarLectura) {
 			TimeUnit.MILLISECONDS.sleep(Integer.valueOf(mesaConfig.getWaitAnalisis().trim()));
-			throw new Exception("Mano actual ya ha sido analizada: " + handInfoDto.getHand());
+			throw new Exception("Mano actual ya ha sido analizada: " + resComp.getHand());
 		}
 
 		// almaceno la imagen de la ultima mesa analizada de cada cuadrante para poder
 		// guardarla si el usuario desea por la interfaz
 		almacenarColaImagenes(screenImg, mesaActual);
 
-		return handInfoDto;
+		return resComp;
 	}
 
 	private void almacenarColaImagenes(BufferedImage screenImg, Zona mesaActual) {

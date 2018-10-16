@@ -233,7 +233,6 @@ public class HandInfoDto {
 		if(!this.numjug.equals(hand.numjug)) return false;
 		if(!this.posHero.equals(hand.posHero)) return false;
 		if(!this.btnPos.equals(hand.btnPos)) return false;
-		if(!this.posHero.equals(hand.posHero)) return false;
 		if(this.stacksBb.length != hand.getStacksBb().length) return false;
 		for (int i=0; i<hand.getStacksBb().length; i++) {
 			Double shand = hand.getStacksBb()[i];
@@ -242,6 +241,11 @@ public class HandInfoDto {
 		}
 		
 		return true;		
+	}
+	
+	public String concat() {
+		String concat =  this.hand + this.numjug + this.posHero + this.btnPos + Arrays.toString(this.stacksBb);		
+		return concat;
 	}
 	
 

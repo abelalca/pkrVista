@@ -44,8 +44,8 @@
 				<li class="active"><a data-toggle="tab" href="#tabReal">Real
 						Time</a></li>
 <!-- 				<li><a data-toggle="tab" href="#tabTest">Test ScreenShot</a></li> -->
-				<li><a data-toggle="tab" href="#tabHand" ng-click=initabHand()>Hand
-						ranges</a></li>
+<!-- 				<li><a data-toggle="tab" href="#tabHand" ng-click=initabHand()>Hand -->
+<!-- 						ranges</a></li> -->
 			</ul>
 		</div>
 
@@ -89,7 +89,7 @@
 								<tr style="height: 20px;">
 									<td colspan="{{anchoColum}}"
 										style="height: 20px; text-align: center; background-color: #000000; color: #ffffff;"><span><strong>{{res.izqVsEffStack}}</strong></span></td>
-									<td style="height: 20px; text-align: center;"></td>
+									<td style="height: 20px; text-align: center;">{{mesaNombre}}</td>
 									<td colspan="{{anchoColum}}"
 										style="height: 20px; text-align: center; background-color: #000000; color: #ffffff;"><span><strong>{{res.derVsEffStack}}</strong></span></td>
 								</tr>
@@ -142,13 +142,48 @@
 										</h1>
 									</td>
 								</tr>
+								
 								<tr style="height: 20px;">
 									<td colspan="{{anchoColum}}"></td>
 									<td
 										style="text-align: center; background-color: white; color: blue"><span>{{tiempo}}</span></td>
-								</tr>
+								</tr>					
 							</tbody>
 						</table>
+<!-- 						neva tabla para 3way -->
+						<div ng-show="res.posHero=='BB' && res.numJug=='3max'" ng-init="res.posHero==''">
+						<table style="margin-top: 10px;">
+							<tbody>	
+								<tr style="height: 20px;">
+									<td colspan="50px" style="height: 20px;"></td>									
+									<td style="border: 1px solid black; text-align: left; text-align: center; background-color: red; color: #ffffff;">3way</td>
+									<td style="border: 1px solid black; text-align: left; text-align: center; background-color: #000000; color: #ffffff;">{{eff3WayStack}}</td>
+								</tr>								
+								<tr style="height: 20px;">
+									<td colspan="50px" style="height: 20px;"></td>
+									<td style="border: 1px solid black; text-align: center; background-color: #ff9900; color: black; margin-left: 30px;"><strong>LL</strong></td>
+									<td style="border: 1px solid black; text-align: center; background-color: #ff9900; color: black; margin-left: 30px;"><strong>LR</strong></td>
+									<td style="border: 1px solid black; text-align: center; background-color: #ff9900; color: black; margin-left: 30px;"><strong>LC</strong></td>
+									<td style="border: 1px solid black; text-align: center; background-color: #009933; color: black; margin-left: 30px;"><strong>RC</strong></td>
+									<td style="border: 1px solid black; text-align: center; background-color: #009933; color: black; margin-left: 30px;"><strong>RS</strong></td>
+									<td style="border: 1px solid black; text-align: center; background-color: #ff3300; color: black; margin-left: 30px;"><strong>SS</strong></td>								
+								</tr>								
+								<tr style="height: 20px;">
+									<td colspan="50px" style="height: 20px;"></td>
+									<td style="border: 1px solid black; text-align: left; padding: 0px 5px 0px 5px;">{{res.ll}}</td>
+									<td style="border: 1px solid black; text-align: left; padding: 0px 5px 0px 5px;;">{{res.lr}}</td>
+									<td style="border: 1px solid black; text-align: left; padding: 0px 5px 0px 5px;;">{{res.ls}}</td>
+									<td style="border: 1px solid black; text-align: left; padding: 0px 5px 0px 5px;;">{{res.rc}}</td>
+									<td style="border: 1px solid black; text-align: left; padding: 0px 5px 0px 5px;;">{{res.rs}}</td>	
+									<td style="border: 1px solid black; text-align: left; padding: 0px 5px 0px 5px;;">{{res.ss}}</td>																
+								</tr>	
+								<tr style="height: 20px;">
+									<td colspan="50px" style="height: 30px; margin-bottom: 20px;"></td>									
+								</tr>																						
+							</tbody>					
+						</table>						
+						</div>
+
 
 					</div>
 				</div>
@@ -178,27 +213,27 @@
 <!-- 				</div> -->
 
 
-				<div id="tabHand" class="tab-pane fade">
-					<div class="container-fluid" style="margin-top: 10px;">
-						<button type="button" class="btn btn-danger"
-							ng-click="limpiarRangos()">Clear All</button>
-						<table border="2" style="margin-top: 10px; padding: 1px;">
-							<tbody>
-								<tr ng-repeat="fila in allHands" style="height: 50px;">
-									<td ng-repeat="manod in fila" style="{{manod.estilo}}"	ng-click="clickHand(manod)">{{manod.value}}</td>
-								</tr>
-							</tbody>
-						</table>
-						<div>
-							<textarea rows="1" cols="88" style="margin-top: 10px;"
-								ng-model="rango">
-							{{$scope.rango}}
-						</textarea>
-						</div>
+<!-- 				<div id="tabHand" class="tab-pane fade"> -->
+<!-- 					<div class="container-fluid" style="margin-top: 10px;"> -->
+<!-- 						<button type="button" class="btn btn-danger" -->
+<!-- 							ng-click="limpiarRangos()">Clear All</button> -->
+<!-- 						<table border="2" style="margin-top: 10px; padding: 1px;"> -->
+<!-- 							<tbody> -->
+<!-- 								<tr ng-repeat="fila in allHands" style="height: 50px;"> -->
+<!-- 									<td ng-repeat="manod in fila" style="{{manod.estilo}}"	ng-click="clickHand(manod)">{{manod.value}}</td> -->
+<!-- 								</tr> -->
+<!-- 							</tbody> -->
+<!-- 						</table> -->
+<!-- 						<div> -->
+<!-- 							<textarea rows="1" cols="88" style="margin-top: 10px;" -->
+<!-- 								ng-model="rango"> -->
+<!-- 							{{$scope.rango}} -->
+<!-- 						</textarea> -->
+<!-- 						</div> -->
 
-					</div>
+<!-- 					</div> -->
 
-				</div>
+<!-- 				</div> -->
 			</div>
 
 		</div>

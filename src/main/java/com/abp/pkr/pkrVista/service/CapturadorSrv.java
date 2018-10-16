@@ -72,6 +72,7 @@ public class CapturadorSrv {
 			fin = System.currentTimeMillis();
 			handInfoDto.setTiempoRest((fin - ini));
 			log.debug("tiempo extraer Accion info de mesa: " + (fin - ini));
+			accion.setMesaNombre(mesaActual.getNombre());
 			accion.setTiempo(fin - ini);
 		}
 
