@@ -124,11 +124,11 @@ public class CapturadorNgcImpl implements CapturadorNgc {
 	 * @return
 	 */
 	public Zona mesaMouse() {
+
 		Point p = MouseInfo.getPointerInfo().getLocation();
 		List<Zona> mesas = mesaConfig.getMesa();
 		Zona mesaActual = null;
 		for (Zona mesa : mesas) {
-
 			if (p.getX() > mesa.getX() && p.getX() < (mesa.getX() + mesa.getAncho())) {
 				if (p.getY() > mesa.getY() && p.getY() < (mesa.getY() + mesa.getAlto())) {
 					mesaActual = new Zona();
@@ -155,21 +155,13 @@ public class CapturadorNgcImpl implements CapturadorNgc {
 	 * @throws Exception
 	 */
 	public BufferedImage capturarScreenZona(Rectangle zona) throws Exception {
-		log.trace("Capturando screen en ruta= {}, y hora= {}", home + mesaConfig.getRutacaptura(),
-				new Date().getTime());
-
 		BufferedImage screenImage = null;
 		try {
 			Robot robot = new Robot();
 			screenImage = robot.createScreenCapture(zona);
 
-			// String fileName = home + mesaConfig.getRutacaptura() +
-			// mesaConfig.getNombrearchivo() + mesaConfig.getFormato();
-			// ImageIO.write(screenImage, mesaConfig.getFormato(), new
-			// File(fileName));
 		} catch (Exception ex) {
-			log.error("Error capturando imagen en ruta= {} y hora= {}", home + mesaConfig.getRutacaptura(),
-					new Date().getTime());
+			log.error("Error capturando imagen de la zona");
 			throw ex;
 		}
 		return screenImage;

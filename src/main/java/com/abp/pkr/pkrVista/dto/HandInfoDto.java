@@ -228,7 +228,7 @@ public class HandInfoDto {
 		this.cartas.set(posicion, carta);
 	}
 	
-	public boolean equals(HandInfoDto hand) {
+	public boolean equalsHand(HandInfoDto hand) {
 		if(!this.hand.equals(hand.hand)) return false;
 		if(!this.numjug.equals(hand.numjug)) return false;
 		if(!this.posHero.equals(hand.posHero)) return false;

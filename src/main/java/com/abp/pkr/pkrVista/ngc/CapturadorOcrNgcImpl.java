@@ -130,36 +130,6 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 	}
 
 	/**
-	 * almacena en memoria los ultimos 16 hands analizadas para no volverlas a
-	 * analizar nuevamente
-	 * 
-	 * @param bufferManos
-	 * @param handInfoDto
-	 * @return
-	 */
-	private boolean almacenarLectura(List<HandInfoDto> bufferManos, HandInfoDto handInfoDto) {
-
-		for (HandInfoDto h : bufferManos) {
-			try {
-				boolean b = h.equals(handInfoDto);
-				if (b) {
-					return false;
-				}
-			} catch (Exception e) {
-				return true;
-			}
-		}
-
-		if (bufferManos.size() > 16) {
-			bufferManos.remove(0);
-		}
-		bufferManos.add(handInfoDto);
-
-		return true;
-
-	}
-
-	/**
 	 * Adapta los datos capturados por histograma y los corrige para que queden bien
 	 * para ser retornados
 	 * 
@@ -200,7 +170,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 
 			// Leer info cartas
 			if (key.contains("cartas")) {
-				if (value == null) {
+				if (value == null || value.contains("X")) {
 					throw new Exception("Sin datos para leer cartas");
 				}
 				if (value.trim().length() > 1) {
@@ -331,15 +301,14 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 			if (zona.getNombre().contains("palos")) {
 				mapa = buffImgPalos;
 			}
-
+			log.debug("Obteniendo informacion de : {} ", zona.getNombre());
 			try {
 				// seleccionamos el buffer que mas se parezca a la imagen
 				long ini = System.currentTimeMillis();
 				String lectura = leerInfoPorHistograma(subImg, mapa, zona);
+				log.debug("... informacion obtenida para {} es : {} ", zona.getNombre(), lectura);
 				mapaLectura.put(zona.getNombre(), lectura);
 				long fin = System.currentTimeMillis();
-				log.debug("tiempo lectura de zona  " + zona.getNombre() + " : " + (fin - ini) + " , valor de lectura: "
-						+ lectura);
 			} catch (Exception e) {
 				log.error(e.getMessage());
 			}
@@ -470,8 +439,10 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 
 		// Si el mouse no esta dentro de ninguna mesa
 		if (mesaActual == null) {
+			log.debug("Mouse no se encuentra dentro de ninguna zona");
 			return handInfoDto;
 		}
+		log.debug("Obteniendo coordenadas de zona bajo el mouse, nombre zona: {}", mesaActual.getNombre());
 		log.debug("Obteniendo coordenadas mesa actual (x,y): " + mesaActual.getX() + ", " + mesaActual.getY());
 
 		// capturo screen
@@ -484,36 +455,37 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		// probable
 		int numItera = Integer.valueOf(mesaConfig.getNumIteraCaptura().trim());
 
-		List<BufferedImage> screenList = new ArrayList<>();
+		Map<Integer, BufferedImage> screenList = new HashMap<>();
 		for (int i = 0; i < numItera; i++) {
-			screenList.add(screenImg);
+			screenList.put(i, screenImg);
 		}
 
 		// procesamos zonas
 		List<HandInfoDto> hdto = new ArrayList<>();
-		screenList.parallelStream().forEach(screen -> {
+		List<String> errores = new ArrayList<>();
+		screenList.entrySet().parallelStream().forEach(entry -> {
+			BufferedImage screen = entry.getValue();
+			Integer imagenIdx = entry.getKey();
+			log.debug("!!!! Procesando imagen para obtener informacion de datos de la mesa: {} , numeroIteracion: {}",
+					mesaActual.getNombre(), imagenIdx);
 			try {
-				log.debug("Procesando imagen para obtener informacion de mesa: " + mesaActual.getNombre());
 				// seleccionamos tipo de procesamiento configurado y procesamos la imagen
 				String tipoOcr = mesaConfig.getTipoOCR();
 				if (tipoOcr.equals("histogram")) {
-					hdto.add(procesarZonasPorHistograma(screen));				}
+					hdto.add(procesarZonasPorHistograma(screen));
+				}
 			} catch (Exception e) {
 				log.error(e.getMessage());
+				errores.add(e.getMessage());
 			}
 		});
 
-		// encontrar el resultado mas probable de todas las lecturas
-//		Map<String, Integer> cuenta = new HashMap<>();
-//		
-//		for (int i = 1; i < hdto.size(); i++) {
-//			if (hdto.get(i).equals(hdto.get(i-1))) {
-//				cuenta.put(hdto.get(i).concat(), )
-//			}
-//			
-//		}
-		
-		
+		if (errores.size() > 0) {
+			log.debug("Error procesando OCR: {}", errores.get(0));
+			throw new Exception(errores.get(0));
+		}
+
+		// obteniendo el resultado mas comun entre todas las iteraciones
 		Map<String, List<HandInfoDto>> result = hdto.stream().collect(Collectors.groupingBy(HandInfoDto::concat));
 
 		Map<String, Integer> resCount = new HashMap<>();
@@ -531,13 +503,6 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 				resComp = hd;
 				break;
 			}
-		}
-
-		// almacenar mano leida para no procesarla dos veces
-		boolean procesarLectura = almacenarLectura(bufferManosAnalizadas, resComp);
-		if (!procesarLectura) {
-			TimeUnit.MILLISECONDS.sleep(Integer.valueOf(mesaConfig.getWaitAnalisis().trim()));
-			throw new Exception("Mano actual ya ha sido analizada: " + resComp.getHand());
 		}
 
 		// almaceno la imagen de la ultima mesa analizada de cada cuadrante para poder

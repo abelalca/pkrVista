@@ -47,6 +47,8 @@ public class CapturadorSrv {
 	 */
 	@GetMapping(value = "/mesaInfo")
 	public AccionInfoDto extraerMesaInfo() throws Exception {
+		log.debug("llamando servicio REST /captura/mesaInfo");
+		
 		long ini = System.currentTimeMillis();
 		long fin = System.currentTimeMillis();
 		AccionInfoDto accion = new AccionInfoDto();
@@ -59,19 +61,23 @@ public class CapturadorSrv {
 		try {
 			handInfoDto = capturadorOcrNgcImpl.extraerMesaInfo(mesaActual);
 		} catch (Exception e) {
-			throw e;
+			accion.setTiempo(-1);
+			log.error(e.getMessage());
+			return null;
 		}
 
 		if (handInfoDto != null) {
 			try {
 				accion = consumirLogicPre(handInfoDto);
 			} catch (Exception e) {
-				throw e;
+				accion.setTiempo(-2);
+				log.error(e.getMessage());
+				return null;
 			}
 
 			fin = System.currentTimeMillis();
 			handInfoDto.setTiempoRest((fin - ini));
-			log.debug("tiempo extraer Accion info de mesa: " + (fin - ini));
+			log.debug("Tiempo extraer Accion info TOTAL de mesa: " + (fin - ini));
 			accion.setMesaNombre(mesaActual.getNombre());
 			accion.setTiempo(fin - ini);
 		}
@@ -92,7 +98,8 @@ public class CapturadorSrv {
 
 	public AccionInfoDto consumirLogicPre(HandInfoDto handInfoDto) {
 		final String url = "http://localhost:8450/proceso/procesarHand";
-
+		log.debug("llamando servicio Logica preflop desde PkrVista: " + url);
+		
 		RestTemplate restTemplate = new RestTemplate();
 		AccionInfoDto accion = restTemplate.postForObject(url, handInfoDto, AccionInfoDto.class);
 		log.debug("Consumiendo servicio Rest de Logica Preflop: " + (accion != null ? "Exitoso" : "Fallo"));

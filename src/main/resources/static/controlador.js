@@ -137,7 +137,7 @@ app
 							return "red";
 						}
 						if (tipo == "GTO") {
-							return "purple";
+							return "#ff4d94";
 						}
 						return "black";
 					}
@@ -215,6 +215,9 @@ app
 						if (defAccion == "O") {
 							return "#ff6666";
 						}
+						if (defAccion == "F") {
+							return "#ccccb3";
+						}						
 						return "white";
 					}
 
@@ -230,6 +233,13 @@ app
 						if (action == "3" || action == "O" || action == "2") {
 							color = "#ff6666"
 						}
+						if (accionJug == "Fold") {
+							color = "#ccccb3"
+						}
+						if (accionJug == "3BNAi") {
+							color = "#ff99cc"
+						}
+						
 						return {
 							"background-color" : color
 						}
