@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html ng-app="app">
+<head>
+<meta charset="UTF-8">
+<title>PKRSOFT</title>
+
+<!-- load bootstrap and fontawesome via CDN -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<script
+	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+
+
+
+<script src="controlador.js"></script>
+
+<style>
+.row.row-eq-height {
+	display: -webkit-box;
+	display: -webkit-flex;
+	display: -ms-flexbox;
+	display: flex;
+}
+</style>
+
+
+</head>
+
+<body ng-controller="mainCtl">
+
+	<div class="container">
+		<div class="row">
+			<h1 align="center">PkrSoft</h1>
+		</div>
+
+		<div class="row">
+			<ul class="nav nav-tabs">
+				<li class="active"><a data-toggle="tab" href="#tabReal">Real
+						Time</a></li>
+<!-- 				<li><a data-toggle="tab" href="#tabTest">Test ScreenShot</a></li> -->
+<!-- 				<li><a data-toggle="tab" href="#tabHand" ng-click=initabHand()>Hand -->
+<!-- 						ranges</a></li> -->
+			</ul>
+		</div>
+
+		<div class="row">
+			<div class="tab-content">
+
+				<!-- 			primera tab -->
+				<div id="tabReal" class="tab-pane fade in active"
+					ng-init="ciclar = false">
+					<div class="container-fluid" style="margin-top: 10px;">
+						<!-- 					 fila de botones -->
+						<div class="row">
+							<button type="button" class="btn btn-{{estadoRun}} btn-lg" ng-init="estadoRun='default'"
+								ng-click=iniciarAsesor()>Start</button>
+							<button type="button" class="btn btn-{{estadoStop}} btn-lg" ng-init="estadoStop='danger'"
+								ng-click=detener()>Stop</button>
+<!-- 							<button type="button" class="btn btn-default" -->
+<!-- 								title="se debe cambiar configuracion de mesaconf.mesa" -->
+<!-- 								ng-click=dispararShoot()>Shoot</button> -->
+							<button type="button" class="btn btn-light"
+								ng-click=accionDesdeImagen()>Test Imagen File</button>								
+    							<button class="btn btn-light" type="button" ng-click=capturarZona(zonaCaptura)>Capturar Zona</button>
+  								<input type="text" ng-model="zonaCaptura" ng-init="zonaCaptura='QA1'">
+								<span class="glyphicon glyphicon-ok" ng-show="showAlerta"></span>
+								
+						</div>
+
+						<!-- 						fila de cuadrantes -->
+						<div class="row" style="margin-top: 17px;">
+							<span ng-repeat="cuadrante in cuadrantes">
+								<button type="button" class="btn btn-lg"
+									ng-click="almacenarImagenCuadrante(cuadrante)"
+									style="margin-right: 3px;">{{cuadrante}}</button>
+							</span>
+						</div>
+
+						<!-- 						fila de resultados -->
+						<table
+							style="border-collapse: collapse; border: none; margin-top: 30px;">
+							<tbody>
+								<tr style="height: 20px;">
+									<td colspan="{{anchoColum}}"
+										style="height: 20px; text-align: center; background-color: #000000; color: #ffffff;"><span><strong>{{res.izqVsEffStack}}</strong></span></td>
+									<td style="height: 20px; text-align: center;">{{mesaNombre}}</td>
+									<td colspan="{{anchoColum}}"
+										style="height: 20px; text-align: center; background-color: #000000; color: #ffffff;"><span><strong>{{res.derVsEffStack}}</strong></span></td>
+								</tr>
+								<tr style="height: 20px;">
+									<td ng-repeat="tipoPlayer in tipJug"
+										style="height: 20px; text-align: center; border: 3px solid; padding: 2px; border-color: black; background-color: {{tipoPlayer.color}};"><strong>{{tipoPlayer.tipo}}</strong></td>
+									<td style="height: 20px; text-align: center;"></td>
+									<td ng-repeat="tipoPlayer in tipJug | reverse"
+										style="height: 20px; text-align: center; border: 3px solid; padding: 2px; border-color: black; background-color: {{tipoPlayer.color}}"><strong>{{tipoPlayer.tipo}}</strong></td>
+								</tr>
+
+								<tr style="height: 20px;">
+									<td ng-repeat="accion in acc"
+										style="text-align: center; border: 1px solid; padding: 3px;" ng-style="pintarAccionJug(accion.izqQA1)"><strong>{{accion.izqQA1}}</strong></td>
+									<td style="height: 20px; text-align: center;"></td>
+									<td ng-repeat="accion in acc | reverse"
+										style="text-align: center; border: 1px solid; padding: 3px;" ng-style="pintarAccionJug(accion.derQA1)"><strong>{{accion.derQA1}}</strong></td>
+								</tr>
+								<tr style="height: 20px;">
+									<td ng-repeat="accion in acc"
+										style="text-align: center; border: 1px solid; padding: 3px;" ng-style="pintarAccionJug(accion.izqQA2)"><strong>{{accion.izqQA2}}</strong></td>
+									<td style="height: 20px; text-align: center;"></td>
+									<td ng-repeat="accion in acc | reverse"
+										style="text-align: center; border: 1px solid; padding: 3px;" ng-style="pintarAccionJug(accion.derQA2)"><strong>{{accion.derQA2}}</strong></td>
+								</tr>
+								<tr style="height: 20px;">
+									<td ng-repeat="accion in acc"
+										style="text-align: center; border: 3px solid; padding: 3px; border-color: red;"><strong>{{accion.izqQA3}}</strong></td>
+									<td style="height: 20px; text-align: center;"></td>
+									<td ng-repeat="accion in acc | reverse"
+										style="text-align: center; border: 3px solid; padding: 3px; border-color: red;"><strong>{{accion.derQA3}}</strong></td>
+								</tr>
+								<tr style="height: 20px;">
+									<td colspan="{{anchoColum}}"></td>
+									<td style="text-align: center;"><strong>{{res.posHero}}</strong></td>
+								</tr>
+								<tr style="height: 20px;">
+									<td colspan="{{anchoColum}}"></td>
+									<td
+										style="text-align: center; background-color: #000000; color: #ffffff;"><span><strong>{{res.stackHero}}</strong></span></td>
+								</tr>
+								<tr style="height: 20px;">
+									<td colspan="{{anchoColum}}"></td>
+									<td
+										style="text-align: center; border: 2px solid; opacity: 0.9; background-color: {{defAcc}}">
+										<h1>
+											<span style="color: black; margin: 10px; opacity: 1">
+												{{carta1}}<span ng-bind-html="palo1"></span>{{carta2}}<span
+												ng-bind-html="palo2"> </span>
+										</h1>
+									</td>
+								</tr>
+								
+								<tr style="height: 20px;">
+									<td colspan="{{anchoColum}}"></td>
+									<td
+										style="text-align: center; background-color: white; color: blue"><span>{{tiempo}}</span></td>
+								</tr>					
+							</tbody>
+						</table>
+<!-- 						neva tabla para 3way -->
+						<div ng-show="res.posHero=='BB' && res.numJug=='3max'" ng-init="res.posHero==''">
+						<table style="margin-top: 10px;">
+							<tbody>	
+								<tr style="height: 20px;">
+									<td colspan="50px" style="height: 20px;"></td>									
+									<td style="border: 1px solid black; text-align: left; text-align: center; background-color: red; color: #ffffff;">3way</td>
+									<td style="border: 1px solid black; text-align: left; text-align: center; background-color: #000000; color: #ffffff;">{{eff3WayStack}}</td>
+								</tr>								
+								<tr style="height: 20px;">
+									<td colspan="50px" style="height: 20px;"></td>
+									<td style="border: 1px solid black; text-align: center; background-color: #ff9900; color: black; margin-left: 30px;"><strong>LL</strong></td>
+									<td style="border: 1px solid black; text-align: center; background-color: #ff9900; color: black; margin-left: 30px;"><strong>LR</strong></td>
+									<td style="border: 1px solid black; text-align: center; background-color: #ff9900; color: black; margin-left: 30px;"><strong>LC</strong></td>
+									<td style="border: 1px solid black; text-align: center; background-color: #009933; color: black; margin-left: 30px;"><strong>RC</strong></td>
+									<td style="border: 1px solid black; text-align: center; background-color: #009933; color: black; margin-left: 30px;"><strong>RS</strong></td>
+									<td style="border: 1px solid black; text-align: center; background-color: #ff3300; color: black; margin-left: 30px;"><strong>SS</strong></td>								
+								</tr>								
+								<tr style="height: 20px;">
+									<td colspan="50px" style="height: 20px;"></td>
+									<td style="border: 1px solid black; text-align: left; padding: 0px 5px 0px 5px;">{{res.ll}}</td>
+									<td style="border: 1px solid black; text-align: left; padding: 0px 5px 0px 5px;;">{{res.lr}}</td>
+									<td style="border: 1px solid black; text-align: left; padding: 0px 5px 0px 5px;;">{{res.ls}}</td>
+									<td style="border: 1px solid black; text-align: left; padding: 0px 5px 0px 5px;;">{{res.rc}}</td>
+									<td style="border: 1px solid black; text-align: left; padding: 0px 5px 0px 5px;;">{{res.rs}}</td>	
+									<td style="border: 1px solid black; text-align: left; padding: 0px 5px 0px 5px;;">{{res.ss}}</td>																
+								</tr>	
+								<tr style="height: 20px;">
+									<td colspan="50px" style="height: 30px; margin-bottom: 20px;"></td>									
+								</tr>																						
+							</tbody>					
+						</table>						
+						</div>
+
+
+					</div>
+				</div>
+
+<!-- 								segunda tab -->
+<!-- 				<div id="tabTest" class="tab-pane fade"> -->
+<!-- 					<h3>Tester</h3> -->
+<!-- 					<div class="row"> -->
+<!-- 						<div class="col-xs-8 col-xs-offset-4"> -->
+<!-- 							<button type="button" class="btn btn-success" -->
+<!-- 								ng-click="infoTiempoReal()">ScrenShoot</button> -->
+<!-- 							<button type="button" class="btn btn-primary" -->
+<!-- 								ng-click="guardarInfo()">Guardar</button> -->
+<!-- 						</div> -->
+<!-- 					</div> -->
+<!-- 					<div class="row" style="margin-top: 15px;"> -->
+<!-- 						<div class="col-md-12"> -->
+<!-- 							<pre>{{res}}</pre> -->
+<!-- 						</div> -->
+<!-- 					</div> -->
+<!-- 					<div class="row" style="margin-top: 15px;"> -->
+<!-- 						<div class="col-md-12" ng-init="imgTmp = 'img/tmpImg.png'"> -->
+<!-- 							<img ng-src="{{imgTmp}}" -->
+<!-- 								style="max-width: 100%; max-height: 100%" /> -->
+<!-- 						</div> -->
+<!-- 					</div> -->
+<!-- 				</div> -->
+
+
+<!-- 				<div id="tabHand" class="tab-pane fade"> -->
+<!-- 					<div class="container-fluid" style="margin-top: 10px;"> -->
+<!-- 						<button type="button" class="btn btn-danger" -->
+<!-- 							ng-click="limpiarRangos()">Clear All</button> -->
+<!-- 						<table border="2" style="margin-top: 10px; padding: 1px;"> -->
+<!-- 							<tbody> -->
+<!-- 								<tr ng-repeat="fila in allHands" style="height: 50px;"> -->
+<!-- 									<td ng-repeat="manod in fila" style="{{manod.estilo}}"	ng-click="clickHand(manod)">{{manod.value}}</td> -->
+<!-- 								</tr> -->
+<!-- 							</tbody> -->
+<!-- 						</table> -->
+<!-- 						<div> -->
+<!-- 							<textarea rows="1" cols="88" style="margin-top: 10px;" -->
+<!-- 								ng-model="rango"> -->
+<!-- 							{{$scope.rango}} -->
+<!-- 						</textarea> -->
+<!-- 						</div> -->
+
+<!-- 					</div> -->
+
+<!-- 				</div> -->
+			</div>
+
+		</div>
+	</div>
+	</div>
+
+</body>
+</html>
