@@ -437,6 +437,14 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 	public HandInfoDto extraerMesaInfo(Zona mesaActual) throws Exception {
 		HandInfoDto handInfoDto = null;
 
+		// tiempo de retraso
+		try {
+			int sleep = Integer.valueOf(mesaConfig.getWaitAnalisis().trim());
+			Thread.sleep(sleep);
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+
 		// Si el mouse no esta dentro de ninguna mesa
 		if (mesaActual == null) {
 			log.debug("Mouse no se encuentra dentro de ninguna zona");
