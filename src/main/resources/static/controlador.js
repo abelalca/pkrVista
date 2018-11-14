@@ -16,6 +16,11 @@ app
 									}
 								});
 					}
+					
+					$scope.borrarCache = function() {
+						$http.get('/captura/borrarCache').then(function(response) {
+						});
+					}
 
 					$scope.infoTiempoReal = function() {
 						$http.get('/pruebas/infoRealTime').then(
@@ -139,6 +144,9 @@ app
 						if (tipo == "GTO") {
 							return "#ff4d94";
 						}
+						if (tipo == "NIT") {
+							return "gray";
+						}
 						return "black";
 					}
 
@@ -206,38 +214,45 @@ app
 					}
 
 					function defaultAccion(defAccion) {
-						if (defAccion == "R") {
-							return "#99ff66";
-						}
-						if (defAccion == "L") {
-							return "#ff9933";
-						}
-						if (defAccion == "O") {
-							return "#ff6666";
-						}
-						if (defAccion == "F") {
-							return "#ccccb3";
-						}						
+//						if (defAccion == "R") {
+//							return "#99ff66";
+//						}
+//						if (defAccion == "L") {
+//							return "#ff9933";
+//						}
+//						if (defAccion == "O") {
+//							return "#ff6666";
+//						}
+//						if (defAccion == "F") {
+//							return "#ccccb3";
+//						}						
 						return "white";
 					}
 
 					$scope.pintarAccionJug = function(accionJug) {
-						var action = accionJug.substring(0, 1);
+						var action = accionJug.substring(0, 2);
+						var action2= accionJug.substring(0, 10);
 						var color = "white";
-						if (action == "R" || action == "1") {
-							color = "#a6ff4d"
+						if (action == "3B") {
+							color = "#ff3385"
 						}
-						if (action == "F" || action == "L") {
+						if (action == "L/") {
 							color = "#ffff80"
 						}
-						if (action == "3" || action == "O" || action == "2") {
-							color = "#ff6666"
+						if (action == "Fl") {
+							color = "#ff8533"
+						}						
+						if (action == "MR") {
+							color = "#aaff80"
 						}
-						if (accionJug == "Fold") {
+						if (action == "Ro") {
+							color = "#33adff"
+						}
+						if (action == "Ch" || action == "Fo") {
 							color = "#ccccb3"
 						}
-						if (accionJug == "3BNAi") {
-							color = "#ff99cc"
+						if (action == "OS" || action2.includes("-Ai")) {
+							color = "#ff3333"
 						}
 						
 						return {

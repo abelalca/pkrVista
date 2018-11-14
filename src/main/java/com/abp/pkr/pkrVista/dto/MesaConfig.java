@@ -23,8 +23,9 @@ public class MesaConfig {
 	private List<Zona> palos = new ArrayList<>();
 	private List<Zona> mesa = new ArrayList<>();
 	private List<Zona> cartas = new ArrayList<>();
+	private List<Zona> accionesJug = new ArrayList<>();
 	private Zona posicion;
-	private Zona numjug;	
+	private Zona numjug;
 
 	private String rutaPalos;
 	private String rutaCartas;
@@ -44,7 +45,7 @@ public class MesaConfig {
 	private String factorResize;
 	private String tessdata;
 	private String tessLeng;
-	private String  waitAnalisis;
+	private String waitAnalisis;
 
 	// rutas de archivos Pruebas
 	private String rutacaptura;
@@ -56,6 +57,8 @@ public class MesaConfig {
 	// usuario y estrategia
 	private String usuario;
 	private String estrategia;
+
+	private String activarHudDinamico;
 
 	// *******************************INNER CLASSES******************************
 	public static class Zona {
@@ -352,6 +355,22 @@ public class MesaConfig {
 
 	public void setNumIteraCaptura(String numIteraCaptura) {
 		this.numIteraCaptura = numIteraCaptura;
-	}	
+	}
+
+	public String getActivarHudDinamico() {
+		return activarHudDinamico;
+	}
+
+	public void setActivarHudDinamico(String activarHudDinamico) {
+		this.activarHudDinamico = activarHudDinamico;
+	}
+
+	public List<Zona> getAccionesJug() {
+		return accionesJug;
+	}
+
+	public void setAccionesJug(List<Zona> accionesJug) {
+		this.accionesJug = accionesJug;
+	}
 
 }

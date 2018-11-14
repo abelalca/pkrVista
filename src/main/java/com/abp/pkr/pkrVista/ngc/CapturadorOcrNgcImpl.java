@@ -28,6 +28,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.abp.pkr.pkrVista.dto.AccionInfoDto;
 import com.abp.pkr.pkrVista.dto.HandInfoDto;
 import com.abp.pkr.pkrVista.dto.MesaConfig;
 import com.abp.pkr.pkrVista.dto.MesaConfig.Zona;
@@ -598,6 +599,10 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		Rectangle rec = new Rectangle((int) zona.getX(), (int) zona.getY(), zona.getAncho(), (int) zona.getAlto());
 		BufferedImage imgRec = UtilView.recortarImagen(img, rec);
 		return imgRec;
+	}
+
+	public void hudSegunAcciones(HandInfoDto handInfoDto, AccionInfoDto accion) {
+
 	}
 
 }

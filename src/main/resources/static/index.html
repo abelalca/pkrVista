@@ -66,7 +66,9 @@
 <!-- 								title="se debe cambiar configuracion de mesaconf.mesa" -->
 <!-- 								ng-click=dispararShoot()>Shoot</button> -->
 							<button type="button" class="btn btn-light"
-								ng-click=accionDesdeImagen()>Test Imagen File</button>								
+								ng-click=accionDesdeImagen()>Test Imagen File</button>	
+							<button type="button" class="btn btn-light"
+								ng-click=borrarCache()>Borrar cache</button>									
     							<button class="btn btn-light" type="button" ng-click=capturarZona(zonaCaptura)>Capturar Zona</button>
   								<input type="text" ng-model="zonaCaptura" ng-init="zonaCaptura='QA1'">
 								<span class="glyphicon glyphicon-ok" ng-show="showAlerta"></span>

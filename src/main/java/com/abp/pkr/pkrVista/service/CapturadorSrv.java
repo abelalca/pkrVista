@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.abp.pkr.pkrVista.dto.AccionInfoDto;
 import com.abp.pkr.pkrVista.dto.HandInfoDto;
+import com.abp.pkr.pkrVista.dto.MesaConfig;
 import com.abp.pkr.pkrVista.dto.MesaConfig.Zona;
 import com.abp.pkr.pkrVista.ngc.CapturadorNgcImpl;
 import com.abp.pkr.pkrVista.ngc.CapturadorOcrNgcImpl;
@@ -35,6 +37,9 @@ public class CapturadorSrv {
 
 	@Autowired
 	protected CapturadorNgcImpl capturador;
+	
+	@Autowired
+	protected MesaConfig mesaConfig;
 
 	/**
 	 * Servicio que es llamado para tomar un screenshot y extraer la informacion de
@@ -81,6 +86,17 @@ public class CapturadorSrv {
 			accion.setMesaNombre(mesaActual.getNombre());
 			accion.setTiempo(fin - ini);
 		}
+		
+		
+		//segun las acciones de la mesa oculto partes del HUD
+		String activarHudDinamico= mesaConfig.getActivarHudDinamico();
+		if (accion != null && activarHudDinamico.trim().equals("true")) {
+			try {
+				capturadorOcrNgcImpl.hudSegunAcciones(handInfoDto, accion);
+			} catch (Exception e) {
+				// TODO: handle exception
+			}			
+		}		
 
 		return accion;
 	}
@@ -94,6 +110,14 @@ public class CapturadorSrv {
 	public List<String> obtenerNombresCuadrantes() throws Exception {
 		List<String> lista = capturadorOcrNgcImpl.obtenerNombresCuadrantes();
 		return lista;
+	}
+	
+	@GetMapping(value = "/borrarCache")
+	public void borrarCache() throws Exception {
+		final String url = "http://localhost:8450/proceso/borrarCache";
+		
+		RestTemplate restTemplate = new RestTemplate();
+		restTemplate.getForEntity(url, String.class);
 	}
 
 	public AccionInfoDto consumirLogicPre(HandInfoDto handInfoDto) {
