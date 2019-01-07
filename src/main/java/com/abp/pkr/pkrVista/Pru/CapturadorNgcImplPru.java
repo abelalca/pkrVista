@@ -197,6 +197,8 @@ public class CapturadorNgcImplPru extends CapturadorOcrNgcImpl {
 		// capturo screen
 		Rectangle zona = new Rectangle(mesa.getX(), mesa.getY(), mesa.getAncho(), mesa.getAlto());
 		BufferedImage screenImg = capturador.capturarScreenZona(zona);
+		
+		UtilView.guardarImagen(screenImg, home + mesaConfig.getRutacaptura() + "\\screen_" + zonaNombre + "-"+ System.currentTimeMillis() + ".png");
 
 		Zona[] listaZonas = listarTodasZonas();
 

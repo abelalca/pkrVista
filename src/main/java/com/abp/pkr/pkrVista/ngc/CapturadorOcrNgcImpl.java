@@ -64,7 +64,6 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 	protected static Map<String, FastBitmap> buffimgStacks = null;
 	protected static Map<String, FastBitmap> buffImgCartas = null;
 	protected static Map<String, FastBitmap> buffImgPosicion = null;
-	protected static Map<String, FastBitmap> buffImgNumJug = null;
 
 	@Autowired
 	protected CapturadorNgcImpl capturador;
@@ -119,13 +118,6 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		capturador.filesToFastBitMap(buffImgPalos, rutaPalos);
 		capturador.filesToBuffer(buffPalos, rutaPalos);
 
-		// inicializo buffer de imagenes: numero jugadores en la mesa
-		buffImgNumJug = new HashMap<>();
-		buffNumJug = new HashMap<>();
-		String rutaNumjug = mesaConfig.getRutaNumjug();
-		capturador.filesToFastBitMap(buffImgNumJug, rutaNumjug);
-		capturador.filesToBuffer(buffNumJug, rutaNumjug);
-
 		// inicilizo buffer de cola de imagenes para guardar errores
 		buffColaImagenes = new HashMap<>();
 	}
@@ -158,15 +150,6 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 				Double val = Double.valueOf(valor);
 				handInfoDto.addStack(val, posic);
 				log.debug("Leyendo info stack > " + key + " : " + valor);
-			}
-
-			// Leer info posicion
-			if (key.contains("posicion")) {
-				if (value == null) {
-					throw new Exception("Sin datos para leer posicion");
-				}
-				handInfoDto.setPosHero(value.trim());
-				log.debug("Leyendo info posicion > " + key + " : " + value);
 			}
 
 			// Leer info cartas
@@ -203,18 +186,12 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 				log.debug("Leyendo info palos > " + key + " : " + value);
 			}
 
-			// Leer info numjug
-			if (key.contains("numJug")) {
-				if (value == null) {
-					throw new Exception("Sin datos para leer numero jugadores");
-				}
-				handInfoDto.setNumjug(Integer.valueOf(value.trim()));
-				log.debug("Leyendo info numero jugadores > " + key + " : " + value);
-			}
 		}
 
 		// seteo stacksBB
 		handInfoDto.setStacksBb(handInfoDto.obtenerStack());
+
+		handInfoDto.setNumjug(handInfoDto.getNumjug());
 
 		// seteo la hand
 		String cartas = String.join("", handInfoDto.getCartas());
@@ -223,6 +200,51 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		// posicion de los jugadores eliminados
 		handInfoDto.setIsActivo(handInfoDto.getIsActivo());
 		log.debug("Leyendo posicion Jugadores Activos: " + Arrays.toString(handInfoDto.getIsActivo()));
+
+		
+		boolean[] isActivo = handInfoDto.getIsActivo();
+		// Leer info posicion
+		for (Entry<String, String> entry : mapaLectura.entrySet()) {
+			String key = entry.getKey();
+			String value = entry.getValue();
+
+			if (key.contains("posi")) {
+				if (value == null) {
+					throw new Exception("Sin datos para leer posicion");
+				}
+
+				String pos = "";
+				if (value.equals("D") && handInfoDto.getNumjug()==3) {
+					if (key.equals("posi0")) {
+						pos = "SB";
+					}
+					if (key.equals("posi1")) {
+						pos = "BU";
+					}
+					if (key.equals("posi2")) {
+						pos = "BB";
+					}
+				}
+				
+				if (value.equals("D") && handInfoDto.getNumjug()==2) {
+					if (key.equals("posi0") && isActivo[0]) {
+						pos = "BB";												
+					}
+					if (key.equals("posi1") && isActivo[0]) {
+						pos = "SB";												
+					}
+					if (key.equals("posi1") && isActivo[2]) {
+						pos = "SB";												
+					}
+					if (key.equals("posi2") && isActivo[2]) {
+						pos = "BB";												
+					}
+				}				
+				
+				handInfoDto.setPosHero(pos);
+				log.debug("Leyendo info posicion > " + key + " : " + value);
+			}
+		}
 
 		// Leer posicion del button en el array de stacks
 		int posBu = -1;
@@ -292,9 +314,6 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 			}
 			if (zona.getNombre().contains("cartas")) {
 				mapa = buffImgCartas;
-			}
-			if (zona.getNombre().contains("numJug")) {
-				mapa = buffImgNumJug;
 			}
 			if (zona.getNombre().contains("posi")) {
 				mapa = buffImgPosicion;
@@ -557,10 +576,6 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		// agregamos todas las zonas a una lista a iterar en paralelo
 		List<Zona> listImages = new ArrayList<>();
 
-		Zona numJug = mesaConfig.getNumjug();
-		numJug.setNombre("numJug");
-		listImages.add(numJug);
-
 		List<Zona> configCartas = mesaConfig.getCartas();
 		int j = 0;
 		for (Zona zona3 : configCartas) {
@@ -585,9 +600,13 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		}
 		listImages.addAll(configPalos);
 
-		Zona configPosicionHero = mesaConfig.getPosicion();
-		configPosicionHero.setNombre("posicion");
-		listImages.add(configPosicionHero);
+		List<Zona> configPosicionHero = mesaConfig.getPosicion();
+		k = 0;
+		for (Zona zona6 : configPosicionHero) {
+			zona6.setNombre("posi" + k);
+			k++;
+		}
+		listImages.addAll(configPosicionHero);
 
 		Zona[] zonaArray = new Zona[listImages.size()];
 		zonaArray = listImages.toArray(zonaArray);

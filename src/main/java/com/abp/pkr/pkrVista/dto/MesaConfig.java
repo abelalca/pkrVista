@@ -24,8 +24,7 @@ public class MesaConfig {
 	private List<Zona> mesa = new ArrayList<>();
 	private List<Zona> cartas = new ArrayList<>();
 	private List<Zona> accionesJug = new ArrayList<>();
-	private Zona posicion;
-	private Zona numjug;
+	private List<Zona> posicion = new ArrayList<>();;
 
 	private String rutaPalos;
 	private String rutaCartas;
@@ -173,11 +172,11 @@ public class MesaConfig {
 		this.mesa = mesa;
 	}
 
-	public Zona getPosicion() {
+	public List<Zona> getPosicion() {
 		return posicion;
 	}
 
-	public void setPosicion(Zona posicion) {
+	public void setPosicion(List<Zona> posicion) {
 		this.posicion = posicion;
 	}
 
@@ -235,14 +234,6 @@ public class MesaConfig {
 
 	public void setRutaPalos(String rutaPalos) {
 		this.rutaPalos = rutaPalos;
-	}
-
-	public Zona getNumjug() {
-		return numjug;
-	}
-
-	public void setNumjug(Zona numjug) {
-		this.numjug = numjug;
 	}
 
 	public String getUsuario() {

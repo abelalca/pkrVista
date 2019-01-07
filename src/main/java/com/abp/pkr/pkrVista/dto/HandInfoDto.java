@@ -189,7 +189,7 @@ public class HandInfoDto {
 	}
 
 	public Integer getNumjug() {
-		return numjug;
+		return this.tmpStacks.size();
 	}
 
 	public void setNumjug(Integer numjug) {
@@ -247,6 +247,8 @@ public class HandInfoDto {
 		String concat =  this.hand + this.numjug + this.posHero + this.btnPos + Arrays.toString(this.stacksBb);		
 		return concat;
 	}
+	
+	
 	
 
 }
