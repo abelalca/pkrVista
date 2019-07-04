@@ -26,6 +26,7 @@ import javax.imageio.ImageIO;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.LoggerFactory;
+import org.springframework.aop.aspectj.annotation.BeanFactoryAspectInstanceFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.abp.pkr.pkrVista.dto.AccionInfoDto;
@@ -52,18 +53,20 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 	protected static Map<String, BufferedImage> buffColaImagenes = null;
 
 	protected static List<HandInfoDto> bufferManosAnalizadas = new ArrayList<>();
+	protected static Map<String, Integer> bufferValorCiegaAnterior = new HashMap<>();
 
 	// protected static Map<String, BufferedImage> buffCartas = null;
 	protected static Map<String, byte[]> buffPalos = null;
 	protected static Map<String, byte[]> buffStacks = null;
 	protected static Map<String, byte[]> buffCartas = null;
 	protected static Map<String, byte[]> buffPosicion = null;
-	protected static Map<String, byte[]> buffNumJug = null;
+	protected static Map<String, byte[]> buffCiegas = null;
 
 	protected static Map<String, FastBitmap> buffImgPalos = null;
 	protected static Map<String, FastBitmap> buffimgStacks = null;
 	protected static Map<String, FastBitmap> buffImgCartas = null;
 	protected static Map<String, FastBitmap> buffImgPosicion = null;
+	protected static Map<String, FastBitmap> buffImgCiegas = null;
 
 	@Autowired
 	protected CapturadorNgcImpl capturador;
@@ -118,6 +121,13 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		capturador.filesToFastBitMap(buffImgPalos, rutaPalos);
 		capturador.filesToBuffer(buffPalos, rutaPalos);
 
+		// inicializo buffer de imagenes: ciegas
+		buffImgCiegas = new HashMap<>();
+		buffCiegas = new HashMap<>();
+		String rutaCiegas = mesaConfig.getRutaCiegas();
+		capturador.filesToFastBitMap(buffImgCiegas, rutaCiegas);
+		capturador.filesToBuffer(buffCiegas, rutaCiegas);
+
 		// inicilizo buffer de cola de imagenes para guardar errores
 		buffColaImagenes = new HashMap<>();
 	}
@@ -128,29 +138,99 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 	 * 
 	 * @param mapaLectura
 	 * @param handInfoDto
+	 * @param contador 
+	 * @param zonaCuadrante
 	 * @throws Exception
 	 */
-	public void normalizarDatosHistograma(Map<String, String> mapaLectura, HandInfoDto handInfoDto) throws Exception {
+	public void normalizarDatosHistograma(Map<String, String> mapaLectura, HandInfoDto handInfoDto, String mesaActual, List<Integer> contador)
+			throws Exception {
 
+		
+		// posicion de los jugadores eliminados
+		handInfoDto.setIsActivo(handInfoDto.getIsActivo());
+		log.debug("Leyendo posicion Jugadores Activos: " + Arrays.toString(handInfoDto.getIsActivo()));
+
+		boolean[] isActivo = handInfoDto.getIsActivo();
+
+		// Leer info posicion
 		for (Entry<String, String> entry : mapaLectura.entrySet()) {
 			String key = entry.getKey();
 			String value = entry.getValue();
 
-			// Leer info stacks
-			if (key.contains("stacks")) {
+			if (key.contains("posi")) {
 				if (value == null) {
-					throw new Exception("Sin datos para leer stacks");
+					throw new Exception("Sin datos para leer posicion");
 				}
-				int posic = Integer.valueOf(key.substring(6, 7));
-				String valor = value.toString().replace(",", ".");
-				int index = valor.indexOf("_");
-				if (index > 0) {
-					valor = valor.substring(0, index);
+
+				String pos = "";
+				if (value.equals("D") && handInfoDto.getNumjug() == 3) {
+					if (key.equals("posi0")) {
+						pos = "SB";
+					}
+					if (key.equals("posi1")) {
+						pos = "BU";
+					}
+					if (key.equals("posi2")) {
+						pos = "BB";
+					}
 				}
-				Double val = Double.valueOf(valor);
-				handInfoDto.addStack(val, posic);
-				log.debug("Leyendo info stack > " + key + " : " + valor);
+
+				if (value.equals("D") && handInfoDto.getNumjug() == 2) {
+					if (key.equals("posi0") && isActivo[0]) {
+						pos = "BB";
+					}
+					if (key.equals("posi1") && isActivo[0]) {
+						pos = "SB";
+					}
+					if (key.equals("posi1") && isActivo[2]) {
+						pos = "SB";
+					}
+					if (key.equals("posi2") && isActivo[2]) {
+						pos = "BB";
+					}
+				}
+
+				handInfoDto.setPosHero(pos);
+				log.debug("Leyendo info posicion > " + key + " : " + value);
 			}
+		}
+
+		// Leer posicion del button en el array de stacks
+		int posBu = -1;
+		Integer infoPosiHero = handInfoDto.getPosHero();
+		boolean[] posActivo = handInfoDto.getIsActivo();
+		switch (handInfoDto.getNumjug()) {
+		case 3:
+			if (infoPosiHero == 0) {
+				posBu = 2;
+			} else if (infoPosiHero == 1) {
+				posBu = 0;
+			} else if (infoPosiHero == 2) {
+				posBu = 1;
+			}
+			break;
+		case 2:
+			if (posActivo[2] && infoPosiHero == 1) {
+				posBu = 0;
+			} else if (posActivo[2] && infoPosiHero == 0) {
+				posBu = 1;
+			} else if (posActivo[0] && infoPosiHero == 1) {
+				posBu = 1;
+			} else if (posActivo[0] && infoPosiHero == 0) {
+				posBu = 0;
+			}
+		default:
+			break;
+		}
+		handInfoDto.setBtnPos(posBu);
+		log.debug("Leyendo posicion de Buton: " + posBu);
+		
+		
+		
+		
+		for (Entry<String, String> entry : mapaLectura.entrySet()) {
+			String key = entry.getKey();
+			String value = entry.getValue();
 
 			// Leer info cartas
 			if (key.contains("cartas")) {
@@ -188,93 +268,121 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 
 		}
 
-		// seteo stacksBB
-		handInfoDto.setStacksBb(handInfoDto.obtenerStack());
+		// Leyendo ciegas
+		for (Entry<String, String> entry : mapaLectura.entrySet()) {
+			String key = entry.getKey();
+			String value = entry.getValue();
+			if (key.contains("ciegas")) {
+				if (value == null || value.contains("X")) {
+					throw new Exception("Sin datos para leer ciegas");
+				}
 
-		handInfoDto.setNumjug(handInfoDto.getNumjug());
+				Integer valorActualCiega = null;
+				try {
+					valorActualCiega = Integer.valueOf(value.trim());
+				} catch (Exception e) {
+					throw new Exception("Error leyendo valor de la ciega");
+				}
 
-		// seteo la hand
-		String cartas = String.join("", handInfoDto.getCartas());
-		handInfoDto.setHand(cartas);
+				handInfoDto.setCiega(valorActualCiega);
+			}
 
-		// posicion de los jugadores eliminados
-		handInfoDto.setIsActivo(handInfoDto.getIsActivo());
-		log.debug("Leyendo posicion Jugadores Activos: " + Arrays.toString(handInfoDto.getIsActivo()));
+		}
 
-		
-		boolean[] isActivo = handInfoDto.getIsActivo();
-		// Leer info posicion
+		// leyendo stacks
+		int cuentaFallidosStacks = 0;
 		for (Entry<String, String> entry : mapaLectura.entrySet()) {
 			String key = entry.getKey();
 			String value = entry.getValue();
 
-			if (key.contains("posi")) {
+			// Leer info stacks
+			if (key.contains("stacks")) {
 				if (value == null) {
-					throw new Exception("Sin datos para leer posicion");
+					throw new Exception("Sin datos para leer stacks");
+				}
+				int posic = Integer.valueOf(key.substring(6, 7));
+				String valor = value.toString().replace(",", ".");
+				int index = valor.indexOf("_");
+				if (index > 0) {
+					valor = valor.substring(0, index);
 				}
 
-				String pos = "";
-				if (value.equals("D") && handInfoDto.getNumjug()==3) {
-					if (key.equals("posi0")) {
-						pos = "SB";
+				try {
+					Double val = Double.valueOf(valor);
+					if (val > 0) {
+						handInfoDto.addStack(val, posic);
 					}
-					if (key.equals("posi1")) {
-						pos = "BU";
-					}
-					if (key.equals("posi2")) {
-						pos = "BB";
-					}
+				} catch (Exception e) {
+					cuentaFallidosStacks++;
 				}
-				
-				if (value.equals("D") && handInfoDto.getNumjug()==2) {
-					if (key.equals("posi0") && isActivo[0]) {
-						pos = "BB";												
-					}
-					if (key.equals("posi1") && isActivo[0]) {
-						pos = "SB";												
-					}
-					if (key.equals("posi1") && isActivo[2]) {
-						pos = "SB";												
-					}
-					if (key.equals("posi2") && isActivo[2]) {
-						pos = "BB";												
-					}
-				}				
-				
-				handInfoDto.setPosHero(pos);
-				log.debug("Leyendo info posicion > " + key + " : " + value);
+				log.debug("Leyendo info stack > " + key + " : " + valor);
 			}
 		}
 
-		// Leer posicion del button en el array de stacks
-		int posBu = -1;
-		Integer infoPosiHero = handInfoDto.getPosHero();
-		boolean[] posActivo = handInfoDto.getIsActivo();
-		switch (handInfoDto.getNumjug()) {
-		case 3:
-			if (infoPosiHero == 0) {
-				posBu = 2;
-			} else if (infoPosiHero == 1) {
-				posBu = 0;
-			} else if (infoPosiHero == 2) {
-				posBu = 1;
-			}
-			break;
-		case 2:
-			if (posActivo[2] && infoPosiHero == 1) {
-				posBu = 0;
-			} else if (posActivo[2] && infoPosiHero == 0) {
-				posBu = 1;
-			} else if (posActivo[0] && infoPosiHero == 1) {
-				posBu = 1;
-			} else if (posActivo[0] && infoPosiHero == 0) {
-				posBu = 0;
-			}
-		default:
-			break;
+		// para corregir bug de la primera mano, como tengo las cartas, entonces seteo
+		// todos los stacks a 25 bbs cuando se falla en las 3 lecturas
+		if (cuentaFallidosStacks == 3) {
+			log.debug("primera mano del sit para el cuadrante {}", mesaActual);
+			handInfoDto.addStack(25.0, 0);
+			handInfoDto.addStack(25.0, 1);
+			handInfoDto.addStack(25.0, 2);
 		}
-		handInfoDto.setBtnPos(posBu);
-		log.debug("Leyendo posicion de Buton: " + posBu);
+
+		// se debe actualizar los stacks llegado el caso del que la ciega halla subido
+		Integer valorActualCiega = handInfoDto.getCiega();
+		Integer valorCiegaAnterior = bufferValorCiegaAnterior.get(mesaActual);
+		if (valorCiegaAnterior != null) {
+			log.debug("cambio de nivel de ciega, nivel anterior: {} y nivel actual: {}", valorCiegaAnterior,
+					valorActualCiega);
+			// obtenemos factor conversor entre ciega anterior y ciega actual
+			Double factor = (double) (Double.valueOf(valorCiegaAnterior) / Double.valueOf(valorActualCiega));
+			log.debug("factor de cambio de ciegas es: {}", factor);
+			if (factor < 1.0) {
+				Map<Integer, Double> tmpStacks = handInfoDto.getTmpStacks();
+				for (Entry<Integer, Double> tmp : tmpStacks.entrySet()) {
+					log.debug(
+							"stack actual leido en la mesa SIN cambio de ciegas, posicion stack: {} y valor stack: {}",
+							tmp.getKey(), tmp.getValue());
+					tmpStacks.put(tmp.getKey(), tmp.getValue() * factor);
+				}
+				handInfoDto.setTmpStacks(tmpStacks);
+			}
+		}
+		
+				
+		// actualizamos el mapa con el valor actual de la ciega
+		Integer numItera = Integer.valueOf(mesaConfig.getNumIteraCaptura());
+		log.debug("contador: {} y numero iteraciones: {}", contador.size(), numItera);
+		if (contador.size()==numItera) {
+			log.debug("entro a borrar el valor de la ciega anterior y actualizarlo por la nueva");
+			try {
+				bufferValorCiegaAnterior.remove(mesaActual);				
+			} catch (Exception e) {
+				// falla el remove pero continua
+			}
+			bufferValorCiegaAnterior.put(mesaActual, valorActualCiega);			
+		}		
+
+		for (Entry<String, Integer> tmp : bufferValorCiegaAnterior.entrySet()) {
+			log.debug("stacks en el buffer de historial de ciegas, mesa: {} y valor ciega: {}", tmp.getKey(),
+					tmp.getValue().toString());
+		}
+
+		Map<Integer, Double> tmpStacks = handInfoDto.getTmpStacks();
+		for (Entry<Integer, Double> tmp : tmpStacks.entrySet()) {
+			log.debug("stack actual leido en la mesa CON cambio de ciegas, posicion stack: {} y valor stack: {}",
+					tmp.getKey(), tmp.getValue());
+		}
+		
+		
+		// seteo la hand
+		String cartas = String.join("", handInfoDto.getCartas());
+		handInfoDto.setHand(cartas);
+
+		// seteo stacksBB
+		handInfoDto.setStacksBb(handInfoDto.obtenerStack());
+
+		handInfoDto.setNumjug(handInfoDto.getNumjug());
 
 		// leer silla Hero en la mesa
 		String configSillaHero = mesaConfig.getSillahero();
@@ -294,12 +402,16 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 	 * Analiza los datos por histograma con libreria Catalano
 	 * 
 	 * @param screenImg
+	 * @param mesaActual
+	 * @param contador 
 	 * @return
 	 * @throws Exception
 	 */
-	protected HandInfoDto procesarZonasPorHistograma(BufferedImage screenImg) throws Exception {
+	protected HandInfoDto procesarZonasPorHistograma(BufferedImage screenImg, String mesaActual, List<Integer> contador) throws Exception {
 		HandInfoDto handInfoDto = new HandInfoDto();
 		long inicio = System.currentTimeMillis();
+
+		// donde se listan todas las zonas a leer de la pantalla
 		Zona[] listaZonas = listarTodasZonas();
 
 		Map<String, String> mapaLectura = new HashMap<>();
@@ -321,6 +433,9 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 			if (zona.getNombre().contains("palos")) {
 				mapa = buffImgPalos;
 			}
+			if (zona.getNombre().contains("ciegas")) {
+				mapa = buffImgCiegas;
+			}
 			log.debug("Obteniendo informacion de : {} ", zona.getNombre());
 			try {
 				// seleccionamos el buffer que mas se parezca a la imagen
@@ -334,7 +449,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 			}
 		});
 
-		normalizarDatosHistograma(mapaLectura, handInfoDto);
+		normalizarDatosHistograma(mapaLectura, handInfoDto, mesaActual, contador);
 
 		long finale = System.currentTimeMillis();
 		log.debug(">>> tiempo  lectura total de la imagen: " + (finale - inicio));
@@ -491,6 +606,8 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		// procesamos zonas
 		List<HandInfoDto> hdto = new ArrayList<>();
 		List<String> errores = new ArrayList<>();
+		List<Integer> contador= new ArrayList<>();
+		contador.add(1);
 		screenList.entrySet().parallelStream().forEach(entry -> {
 			BufferedImage screen = entry.getValue();
 			Integer imagenIdx = entry.getKey();
@@ -500,13 +617,16 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 				// seleccionamos tipo de procesamiento configurado y procesamos la imagen
 				String tipoOcr = mesaConfig.getTipoOCR();
 				if (tipoOcr.equals("histogram")) {
-					hdto.add(procesarZonasPorHistograma(screen));
+					hdto.add(procesarZonasPorHistograma(screen, mesaActual.getNombre(), contador));
 				}
 			} catch (Exception e) {
 				log.error(e.getMessage());
 				errores.add(e.getMessage());
 			}
+			contador.add(1);
 		});
+		
+		contador.clear();
 
 		if (errores.size() > 0) {
 			log.debug("Error procesando OCR: {}", errores.get(0));
@@ -607,6 +727,10 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 			k++;
 		}
 		listImages.addAll(configPosicionHero);
+
+		Zona configCiegas = mesaConfig.getCiegas();
+		configCiegas.setNombre("ciegas");
+		listImages.addAll(Arrays.asList(configCiegas));
 
 		Zona[] zonaArray = new Zona[listImages.size()];
 		zonaArray = listImages.toArray(zonaArray);

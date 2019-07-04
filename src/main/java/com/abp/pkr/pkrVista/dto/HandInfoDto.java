@@ -22,6 +22,7 @@ public class HandInfoDto {
 	private Map<Integer, Double> tmpStacks;
 	private boolean[] isActivo;
 	private Integer numjug;
+	private Integer ciega;
 
 	private String usuario;
 	private String estrategia;
@@ -49,6 +50,14 @@ public class HandInfoDto {
 		this.isActivo = isActivo;
 	}
 
+	public Integer getCiega() {
+		return ciega;
+	}
+
+	public void setCiega(Integer ciega) {
+		this.ciega = ciega;
+	}
+
 	public int getSillaHero() {
 		return sillaHero;
 	}
@@ -64,7 +73,7 @@ public class HandInfoDto {
 	public void setPosHero(Integer posHero) {
 		this.posHero = posHero;
 	}
-	
+
 	public void setPosHero(String posHero) {
 		if (posHero.equals("BB")) {
 			this.posHero = 0;
@@ -90,8 +99,16 @@ public class HandInfoDto {
 			this.tmpStacks = new HashMap<>();
 		}
 		if (stack > 0) {
-			this.tmpStacks.put(posicion, stack);			
+			this.tmpStacks.put(posicion, stack);
 		}
+	}
+
+	public Map<Integer, Double> getTmpStacks() {
+		return this.tmpStacks;
+	}
+
+	public void setTmpStacks(Map<Integer, Double> tmpStacks) {
+		this.tmpStacks = tmpStacks;
 	}
 
 	public Double[] obtenerStack() {
@@ -227,28 +244,31 @@ public class HandInfoDto {
 		}
 		this.cartas.set(posicion, carta);
 	}
-	
+
 	public boolean equalsHand(HandInfoDto hand) {
-		if(!this.hand.equals(hand.hand)) return false;
-		if(!this.numjug.equals(hand.numjug)) return false;
-		if(!this.posHero.equals(hand.posHero)) return false;
-		if(!this.btnPos.equals(hand.btnPos)) return false;
-		if(this.stacksBb.length != hand.getStacksBb().length) return false;
-		for (int i=0; i<hand.getStacksBb().length; i++) {
+		if (!this.hand.equals(hand.hand))
+			return false;
+		if (!this.numjug.equals(hand.numjug))
+			return false;
+		if (!this.posHero.equals(hand.posHero))
+			return false;
+		if (!this.btnPos.equals(hand.btnPos))
+			return false;
+		if (this.stacksBb.length != hand.getStacksBb().length)
+			return false;
+		for (int i = 0; i < hand.getStacksBb().length; i++) {
 			Double shand = hand.getStacksBb()[i];
 			Double stref = this.stacksBb[i];
-			if(shand != stref) return false;
+			if (shand != stref)
+				return false;
 		}
-		
-		return true;		
+
+		return true;
 	}
-	
+
 	public String concat() {
-		String concat =  this.hand + this.numjug + this.posHero + this.btnPos + Arrays.toString(this.stacksBb);		
+		String concat = this.hand + this.numjug + this.posHero + this.btnPos + Arrays.toString(this.stacksBb);
 		return concat;
 	}
-	
-	
-	
 
 }

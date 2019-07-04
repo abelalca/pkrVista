@@ -24,13 +24,14 @@ public class MesaConfig {
 	private List<Zona> mesa = new ArrayList<>();
 	private List<Zona> cartas = new ArrayList<>();
 	private List<Zona> accionesJug = new ArrayList<>();
-	private List<Zona> posicion = new ArrayList<>();;
+	private List<Zona> posicion = new ArrayList<>();
+	private Zona ciegas;
 
 	private String rutaPalos;
 	private String rutaCartas;
 	private String rutaStacks;
 	private String rutaPosicion;
-	private String rutaNumjug;
+	private String rutaCiegas;
 
 	private String formato;
 	private String margenerror;
@@ -316,12 +317,12 @@ public class MesaConfig {
 		this.rutaPosicion = rutaPosicion;
 	}
 
-	public String getRutaNumjug() {
-		return rutaNumjug;
+	public String getRutaCiegas() {
+		return rutaCiegas;
 	}
 
-	public void setRutaNumjug(String rutaNumjug) {
-		this.rutaNumjug = rutaNumjug;
+	public void setRutaCiegas(String rutaCiegas) {
+		this.rutaCiegas = rutaCiegas;
 	}
 
 	public String getWaitAnalisis() {
@@ -362,6 +363,14 @@ public class MesaConfig {
 
 	public void setAccionesJug(List<Zona> accionesJug) {
 		this.accionesJug = accionesJug;
+	}
+
+	public Zona getCiegas() {
+		return ciegas;
+	}
+
+	public void setCiegas(Zona ciegas) {
+		this.ciegas = ciegas;
 	}
 
 }

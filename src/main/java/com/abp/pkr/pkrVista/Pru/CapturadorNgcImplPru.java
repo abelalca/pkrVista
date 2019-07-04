@@ -71,6 +71,8 @@ public class CapturadorNgcImplPru extends CapturadorOcrNgcImpl {
 		}
 		
 		List<HandInfoDto> hdto = new ArrayList<>();
+		List<Integer> contDummy = new ArrayList<>();
+		contDummy.add(1);
 		screenList.stream().parallel().forEach(screen -> {
 			try {
 				log.debug("Procesando imagen para obtener infor mesa...");
@@ -79,11 +81,12 @@ public class CapturadorNgcImplPru extends CapturadorOcrNgcImpl {
 				String tipoOcr = mesaConfig.getTipoOCR();
 				log.debug("tipo de procesamiento: " + tipoOcr);
 				if (tipoOcr.trim().equals("histogram")) {					
-					hdto.add(procesarZonasPorHistograma(screenImg));	
+					hdto.add(procesarZonasPorHistograma(screenImg, "Img", contDummy));	
 				}
 			} catch (Exception e) {
 				log.error(e.getMessage());
-			}			
+			}
+			contDummy.add(1);
 		});
 		
 		Map<String, List<HandInfoDto>> result = hdto.stream().collect(Collectors.groupingBy(HandInfoDto::concat));
