@@ -41,6 +41,8 @@ public class MesaConfig {
 	private String capturazonas;
 	private String numIteraCaptura;
 
+	private String numCiegas;
+
 	// OCR CONFIG
 	private String factorResize;
 	private String tessdata;
@@ -371,6 +373,14 @@ public class MesaConfig {
 
 	public void setCiegas(Zona ciegas) {
 		this.ciegas = ciegas;
+	}
+
+	public String getNumCiegas() {
+		return numCiegas;
+	}
+
+	public void setNumCiegas(String numCiegas) {
+		this.numCiegas = numCiegas;
 	}
 
 }

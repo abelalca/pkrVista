@@ -5,7 +5,6 @@ package com.abp.pkr.pkrVista.ngc;
 
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,19 +13,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.Stack;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.LoggerFactory;
-import org.springframework.aop.aspectj.annotation.BeanFactoryAspectInstanceFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.abp.pkr.pkrVista.dto.AccionInfoDto;
@@ -39,8 +32,6 @@ import Catalano.Imaging.FastBitmap;
 import Catalano.Imaging.Concurrent.Filters.Grayscale;
 import Catalano.Imaging.Tools.ObjectiveFidelity;
 import ch.qos.logback.classic.Logger;
-import net.coobird.thumbnailator.Thumbnails;
-import net.sourceforge.tess4j.Tesseract;
 
 /**
  * @author abpubuntu
@@ -52,7 +43,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 
 	protected static Map<String, BufferedImage> buffColaImagenes = null;
 
-	protected static List<HandInfoDto> bufferManosAnalizadas = new ArrayList<>();
+	protected static Map<String, String> bufferManosAnalizadas = new HashMap<>();
 	protected static Map<String, Integer> bufferValorCiegaAnterior = new HashMap<>();
 
 	// protected static Map<String, BufferedImage> buffCartas = null;
@@ -121,7 +112,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		capturador.filesToFastBitMap(buffImgPalos, rutaPalos);
 		capturador.filesToBuffer(buffPalos, rutaPalos);
 
-		// inicializo buffer de imagenes: ciegas
+		// inicializo buffer de imagenes: blinds level
 		buffImgCiegas = new HashMap<>();
 		buffCiegas = new HashMap<>();
 		String rutaCiegas = mesaConfig.getRutaCiegas();
@@ -138,14 +129,79 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 	 * 
 	 * @param mapaLectura
 	 * @param handInfoDto
-	 * @param contador 
 	 * @param zonaCuadrante
 	 * @throws Exception
 	 */
-	public void normalizarDatosHistograma(Map<String, String> mapaLectura, HandInfoDto handInfoDto, String mesaActual, List<Integer> contador)
+	public void normalizarDatosHistograma(Map<String, String> mapaLectura, HandInfoDto handInfoDto, String mesaActual)
 			throws Exception {
 
-		
+		log.debug("*********** Normalizando Datos de histograma ***************");
+		// leyendo stacks
+		int cuentaFallidosStacks = 0;
+		for (Entry<String, String> entry : mapaLectura.entrySet()) {
+			String key = entry.getKey();
+			String value = entry.getValue();
+
+			// Leer info stacks
+			if (key.contains("stacks")) {
+				if (value == null) {
+					throw new Exception("Sin datos para leer stacks");
+				}
+				int posic = Integer.valueOf(key.substring(6, 7));
+				String valor = value.toString().replace(",", ".");
+				int index = valor.indexOf("_");
+				if (index > 0) {
+					valor = valor.substring(0, index);
+				}
+
+				try {
+					Double val = Double.valueOf(valor);
+					if (val > 0) {
+						handInfoDto.addStack(val, posic);
+					}
+				} catch (Exception e) {
+					cuentaFallidosStacks++;
+				}
+				log.debug("Leyendo info stack > " + key + " : " + valor);
+			}
+		}
+
+		// para corregir bug de la primera mano, como tengo las cartas, entonces seteo
+		// todos los stacks a Xbbs cuando se falla en las 3 lecturas
+		if (cuentaFallidosStacks == 3) {
+			Double numCiegasFirstHand = Double.valueOf(mesaConfig.getNumCiegas());
+			log.debug("primera mano del sit para el cuadrante {}", mesaActual);
+			handInfoDto.addStack(numCiegasFirstHand, 0);
+			handInfoDto.addStack(numCiegasFirstHand, 1);
+			handInfoDto.addStack(numCiegasFirstHand, 2);
+		}
+
+		// Leyendo ciegas
+		for (Entry<String, String> entry : mapaLectura.entrySet()) {
+			String key = entry.getKey();
+			String value = entry.getValue();
+			if (key.contains("ciegas")) {
+				if (value == null || value.contains("X")) {
+					throw new Exception("Sin datos para leer ciegas");
+				}
+
+				Integer valorActualCiega = null;
+				try {
+					valorActualCiega = Integer.valueOf(value.trim());
+				} catch (Exception e) {
+					throw new Exception("Error leyendo valor de la ciega");
+				}
+				log.debug("Leyendo info valor ciega  > " + valorActualCiega);
+				handInfoDto.setCiega(valorActualCiega);
+			}
+
+		}
+
+		// seteo stacksBB
+		handInfoDto.setStacksBb(handInfoDto.obtenerStack());
+
+		handInfoDto.setNumjug(handInfoDto.getNumjug());
+
 		// posicion de los jugadores eliminados
 		handInfoDto.setIsActivo(handInfoDto.getIsActivo());
 		log.debug("Leyendo posicion Jugadores Activos: " + Arrays.toString(handInfoDto.getIsActivo()));
@@ -224,10 +280,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		}
 		handInfoDto.setBtnPos(posBu);
 		log.debug("Leyendo posicion de Buton: " + posBu);
-		
-		
-		
-		
+
 		for (Entry<String, String> entry : mapaLectura.entrySet()) {
 			String key = entry.getKey();
 			String value = entry.getValue();
@@ -268,121 +321,9 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 
 		}
 
-		// Leyendo ciegas
-		for (Entry<String, String> entry : mapaLectura.entrySet()) {
-			String key = entry.getKey();
-			String value = entry.getValue();
-			if (key.contains("ciegas")) {
-				if (value == null || value.contains("X")) {
-					throw new Exception("Sin datos para leer ciegas");
-				}
-
-				Integer valorActualCiega = null;
-				try {
-					valorActualCiega = Integer.valueOf(value.trim());
-				} catch (Exception e) {
-					throw new Exception("Error leyendo valor de la ciega");
-				}
-
-				handInfoDto.setCiega(valorActualCiega);
-			}
-
-		}
-
-		// leyendo stacks
-		int cuentaFallidosStacks = 0;
-		for (Entry<String, String> entry : mapaLectura.entrySet()) {
-			String key = entry.getKey();
-			String value = entry.getValue();
-
-			// Leer info stacks
-			if (key.contains("stacks")) {
-				if (value == null) {
-					throw new Exception("Sin datos para leer stacks");
-				}
-				int posic = Integer.valueOf(key.substring(6, 7));
-				String valor = value.toString().replace(",", ".");
-				int index = valor.indexOf("_");
-				if (index > 0) {
-					valor = valor.substring(0, index);
-				}
-
-				try {
-					Double val = Double.valueOf(valor);
-					if (val > 0) {
-						handInfoDto.addStack(val, posic);
-					}
-				} catch (Exception e) {
-					cuentaFallidosStacks++;
-				}
-				log.debug("Leyendo info stack > " + key + " : " + valor);
-			}
-		}
-
-		// para corregir bug de la primera mano, como tengo las cartas, entonces seteo
-		// todos los stacks a 25 bbs cuando se falla en las 3 lecturas
-		if (cuentaFallidosStacks == 3) {
-			log.debug("primera mano del sit para el cuadrante {}", mesaActual);
-			handInfoDto.addStack(25.0, 0);
-			handInfoDto.addStack(25.0, 1);
-			handInfoDto.addStack(25.0, 2);
-		}
-
-		// se debe actualizar los stacks llegado el caso del que la ciega halla subido
-		Integer valorActualCiega = handInfoDto.getCiega();
-		Integer valorCiegaAnterior = bufferValorCiegaAnterior.get(mesaActual);
-		if (valorCiegaAnterior != null) {
-			log.debug("cambio de nivel de ciega, nivel anterior: {} y nivel actual: {}", valorCiegaAnterior,
-					valorActualCiega);
-			// obtenemos factor conversor entre ciega anterior y ciega actual
-			Double factor = (double) (Double.valueOf(valorCiegaAnterior) / Double.valueOf(valorActualCiega));
-			log.debug("factor de cambio de ciegas es: {}", factor);
-			if (factor < 1.0) {
-				Map<Integer, Double> tmpStacks = handInfoDto.getTmpStacks();
-				for (Entry<Integer, Double> tmp : tmpStacks.entrySet()) {
-					log.debug(
-							"stack actual leido en la mesa SIN cambio de ciegas, posicion stack: {} y valor stack: {}",
-							tmp.getKey(), tmp.getValue());
-					tmpStacks.put(tmp.getKey(), tmp.getValue() * factor);
-				}
-				handInfoDto.setTmpStacks(tmpStacks);
-			}
-		}
-		
-				
-		// actualizamos el mapa con el valor actual de la ciega
-		Integer numItera = Integer.valueOf(mesaConfig.getNumIteraCaptura());
-		log.debug("contador: {} y numero iteraciones: {}", contador.size(), numItera);
-		if (contador.size()==numItera) {
-			log.debug("entro a borrar el valor de la ciega anterior y actualizarlo por la nueva");
-			try {
-				bufferValorCiegaAnterior.remove(mesaActual);				
-			} catch (Exception e) {
-				// falla el remove pero continua
-			}
-			bufferValorCiegaAnterior.put(mesaActual, valorActualCiega);			
-		}		
-
-		for (Entry<String, Integer> tmp : bufferValorCiegaAnterior.entrySet()) {
-			log.debug("stacks en el buffer de historial de ciegas, mesa: {} y valor ciega: {}", tmp.getKey(),
-					tmp.getValue().toString());
-		}
-
-		Map<Integer, Double> tmpStacks = handInfoDto.getTmpStacks();
-		for (Entry<Integer, Double> tmp : tmpStacks.entrySet()) {
-			log.debug("stack actual leido en la mesa CON cambio de ciegas, posicion stack: {} y valor stack: {}",
-					tmp.getKey(), tmp.getValue());
-		}
-		
-		
 		// seteo la hand
 		String cartas = String.join("", handInfoDto.getCartas());
 		handInfoDto.setHand(cartas);
-
-		// seteo stacksBB
-		handInfoDto.setStacksBb(handInfoDto.obtenerStack());
-
-		handInfoDto.setNumjug(handInfoDto.getNumjug());
 
 		// leer silla Hero en la mesa
 		String configSillaHero = mesaConfig.getSillahero();
@@ -403,11 +344,12 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 	 * 
 	 * @param screenImg
 	 * @param mesaActual
-	 * @param contador 
+	 * @param contador
 	 * @return
 	 * @throws Exception
 	 */
-	protected HandInfoDto procesarZonasPorHistograma(BufferedImage screenImg, String mesaActual, List<Integer> contador) throws Exception {
+	protected HandInfoDto procesarZonasPorHistograma(BufferedImage screenImg, String mesaActual, List<Integer> contador)
+			throws Exception {
 		HandInfoDto handInfoDto = new HandInfoDto();
 		long inicio = System.currentTimeMillis();
 
@@ -436,23 +378,70 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 			if (zona.getNombre().contains("ciegas")) {
 				mapa = buffImgCiegas;
 			}
-			log.debug("Obteniendo informacion de : {} ", zona.getNombre());
 			try {
 				// seleccionamos el buffer que mas se parezca a la imagen
 				long ini = System.currentTimeMillis();
+//				log.debug("Obteniendo informacion de : {} ", zona.getNombre());
 				String lectura = leerInfoPorHistograma(subImg, mapa, zona);
-				log.debug("... informacion obtenida para {} es : {} ", zona.getNombre(), lectura);
+				log.debug("... Informacion obtenida para {} es : {} ", zona.getNombre(), lectura);
 				mapaLectura.put(zona.getNombre(), lectura);
 				long fin = System.currentTimeMillis();
 			} catch (Exception e) {
-				log.error(e.getMessage());
+				log.error("error procesarZonasPorHistograma: " + e.toString());
 			}
 		});
 
-		normalizarDatosHistograma(mapaLectura, handInfoDto, mesaActual, contador);
+		try {
+			normalizarDatosHistograma(mapaLectura, handInfoDto, mesaActual);
+		} catch (Exception e2) {
+			log.error("error normalizarDatosHistograma: " + e2.getMessage());
+			throw new Exception(e2);
+		}
 
 		long finale = System.currentTimeMillis();
 		log.debug(">>> tiempo  lectura total de la imagen: " + (finale - inicio));
+		return handInfoDto;
+
+	}
+
+	private HandInfoDto comprobarCambioCiegas(HandInfoDto handInfoDto, String mesaActual) {
+		// se debe actualizar los stacks llegado el caso del que la ciega halla subido
+		Integer valorActualCiega = handInfoDto.getCiega();
+		Integer valorCiegaAnterior = bufferValorCiegaAnterior.get(mesaActual);
+		if (valorCiegaAnterior != null && valorCiegaAnterior != valorActualCiega) {
+			log.debug("cambio de nivel de ciega, nivel anterior: {} y nivel actual: {}", valorCiegaAnterior,
+					valorActualCiega);
+			// obtenemos factor conversor entre ciega anterior y ciega actual
+			Double factor = null;
+			try {
+				factor = (double) (Double.valueOf(valorCiegaAnterior) / Double.valueOf(valorActualCiega));
+			} catch (Exception e) {
+				factor = 1.0;
+			}
+			log.debug("factor de cambio de ciegas es: {}", factor);
+			if (factor < 1.0) {
+				Map<Integer, Double> tmpStacks = handInfoDto.getTmpStacks();
+				for (Entry<Integer, Double> tmp : tmpStacks.entrySet()) {
+					tmpStacks.put(tmp.getKey(), Math.floor((tmp.getValue()*factor) * 100) / 100);
+				}
+				handInfoDto.setTmpStacks(tmpStacks);
+				handInfoDto.setStacksBb(handInfoDto.obtenerStack());
+			}
+		}
+
+		// actualizamos el mapa con el valor actual de la ciega
+		try {
+			bufferValorCiegaAnterior.remove(mesaActual);
+		} catch (Exception e) {
+			// falla el remove pero continua
+		}
+		bufferValorCiegaAnterior.put(mesaActual, valorActualCiega);
+
+		Map<Integer, Double> tmpStacks = handInfoDto.getTmpStacks();
+		for (Entry<Integer, Double> tmp : tmpStacks.entrySet()) {
+			log.debug("stack finales despues de cambio de ciegas. posicion stack: {} y valor stack: {}", tmp.getKey(), tmp.getValue());
+		}
+		
 		return handInfoDto;
 
 	}
@@ -577,7 +566,6 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 			int sleep = Integer.valueOf(mesaConfig.getWaitAnalisis().trim());
 			Thread.sleep(sleep);
 		} catch (Exception e) {
-			// TODO: handle exception
 		}
 
 		// Si el mouse no esta dentro de ninguna mesa
@@ -585,6 +573,10 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 			log.debug("Mouse no se encuentra dentro de ninguna zona");
 			return handInfoDto;
 		}
+
+		log.debug("*******************************AAA*************************************** ");
+		log.debug("*******************************AAA*************************************** ");
+
 		log.debug("Obteniendo coordenadas de zona bajo el mouse, nombre zona: {}", mesaActual.getNombre());
 		log.debug("Obteniendo coordenadas mesa actual (x,y): " + mesaActual.getX() + ", " + mesaActual.getY());
 
@@ -606,11 +598,12 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		// procesamos zonas
 		List<HandInfoDto> hdto = new ArrayList<>();
 		List<String> errores = new ArrayList<>();
-		List<Integer> contador= new ArrayList<>();
+		List<Integer> contador = new ArrayList<>();
 		contador.add(1);
 		screenList.entrySet().parallelStream().forEach(entry -> {
 			BufferedImage screen = entry.getValue();
 			Integer imagenIdx = entry.getKey();
+			log.debug("********************************************************************** ");
 			log.debug("!!!! Procesando imagen para obtener informacion de datos de la mesa: {} , numeroIteracion: {}",
 					mesaActual.getNombre(), imagenIdx);
 			try {
@@ -620,12 +613,15 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 					hdto.add(procesarZonasPorHistograma(screen, mesaActual.getNombre(), contador));
 				}
 			} catch (Exception e) {
-				log.error(e.getMessage());
+				log.error("error mesaActual: " + e.getMessage());
 				errores.add(e.getMessage());
 			}
 			contador.add(1);
 		});
-		
+
+		log.debug("*****************************BBB***************************************** ");
+		log.debug("*****************************BBB***************************************** ");
+
 		contador.clear();
 
 		if (errores.size() > 0) {
@@ -651,6 +647,23 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 				resComp = hd;
 				break;
 			}
+		}
+
+		// comprobamos si la mano fue analizada previamnete
+		String mesaAnalizada = mesaActual.getNombre();
+
+		String mapAnalizadas = bufferManosAnalizadas.get(mesaAnalizada);
+
+		String clave = resComp.getHand() + resComp.getPosHero() + resComp.getNumjug();
+
+		if (mapAnalizadas == null || !(mapAnalizadas.equals(clave)) ) {
+			bufferManosAnalizadas.put(mesaAnalizada, clave);
+			// comprobamos si hay cambio de ciegas
+			resComp = comprobarCambioCiegas(resComp, mesaActual.getNombre());
+			log.debug("log prueba: " + resComp.getStacksBb());
+		} else {
+			log.debug("ABORT: Mano previamente analizada");			
+			return null;
 		}
 
 		// almaceno la imagen de la ultima mesa analizada de cada cuadrante para poder
@@ -742,10 +755,6 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 		Rectangle rec = new Rectangle((int) zona.getX(), (int) zona.getY(), zona.getAncho(), (int) zona.getAlto());
 		BufferedImage imgRec = UtilView.recortarImagen(img, rec);
 		return imgRec;
-	}
-
-	public void hudSegunAcciones(HandInfoDto handInfoDto, AccionInfoDto accion) {
-
 	}
 
 }

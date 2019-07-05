@@ -52,7 +52,7 @@ public class CapturadorSrv {
 	 */
 	@GetMapping(value = "/mesaInfo")
 	public AccionInfoDto extraerMesaInfo() throws Exception {
-		log.debug("llamando servicio REST /captura/mesaInfo");
+		log.debug("LLAMANDO SERVICIO REST /captura/mesaInfo");
 		
 		long ini = System.currentTimeMillis();
 		long fin = System.currentTimeMillis();
@@ -74,30 +74,18 @@ public class CapturadorSrv {
 		if (handInfoDto != null) {
 			try {
 				accion = consumirLogicPre(handInfoDto);
+				fin = System.currentTimeMillis();
+				handInfoDto.setTiempoRest((fin - ini));
+				log.debug("Tiempo extraer Accion info TOTAL de mesa: " + (fin - ini));
+				accion.setTiempo(fin - ini);
 			} catch (Exception e) {
 				accion.setTiempo(-2);
 				log.error(e.getMessage());
 				return null;
 			}
 
-			fin = System.currentTimeMillis();
-			handInfoDto.setTiempoRest((fin - ini));
-			log.debug("Tiempo extraer Accion info TOTAL de mesa: " + (fin - ini));
 			accion.setMesaNombre(mesaActual.getNombre());
-			accion.setTiempo(fin - ini);
 		}
-		
-		
-		//segun las acciones de la mesa oculto partes del HUD
-		String activarHudDinamico= mesaConfig.getActivarHudDinamico();
-		if (accion != null && activarHudDinamico.trim().equals("true")) {
-			try {
-				capturadorOcrNgcImpl.hudSegunAcciones(handInfoDto, accion);
-			} catch (Exception e) {
-				// TODO: handle exception
-			}			
-		}		
-
 		return accion;
 	}
 
@@ -122,11 +110,14 @@ public class CapturadorSrv {
 
 	public AccionInfoDto consumirLogicPre(HandInfoDto handInfoDto) {
 		final String url = "http://localhost:8450/proceso/procesarHand";
-		log.debug("llamando servicio Logica preflop desde PkrVista: " + url);
+		log.debug("--------------------------------------");	
+		log.debug("llamando servicio Logica preflop desde PkrVista: " + url);	
+		log.debug("Mano a analizar: {}, Stacks: {}, posicion:{}, numJugadoresActivos: {}", handInfoDto.getHand(), handInfoDto.getStacksBb(), handInfoDto.getPosHero(), handInfoDto.getNumjug());
 		
 		RestTemplate restTemplate = new RestTemplate();
 		AccionInfoDto accion = restTemplate.postForObject(url, handInfoDto, AccionInfoDto.class);
 		log.debug("Consumiendo servicio Rest de Logica Preflop: " + (accion != null ? "Exitoso" : "Fallo"));
+		log.debug("--------------------------------------");
 
 		return accion;
 	}
