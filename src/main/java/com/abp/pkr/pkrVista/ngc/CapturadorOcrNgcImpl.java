@@ -654,7 +654,7 @@ public class CapturadorOcrNgcImpl implements CapturadorNgc {
 
 		String mapAnalizadas = bufferManosAnalizadas.get(mesaAnalizada);
 
-		String clave = resComp.getHand() + resComp.getPosHero() + resComp.getNumjug();
+		String clave = resComp.getHand() + resComp.getPosHero() + resComp.getNumjug()+ resComp.getStacksBb();
 
 		if (mapAnalizadas == null || !(mapAnalizadas.equals(clave)) ) {
 			bufferManosAnalizadas.put(mesaAnalizada, clave);
